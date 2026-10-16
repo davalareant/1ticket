@@ -4,36 +4,84 @@ namespace Database\Seeders;
 
 use App\Models\Airline;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class AirlineSeeder extends Seeder
 {
     public function run(): void
     {
-        $airlines = [
-            [
-                'code' => 'NA',
-                'name' => 'Nusa Air',
+        $realAirlines = [
+            1 => [
+                'code' => 'GA',
+                'name' => 'Garuda Indonesia',
                 'brand_color' => '#0E2A47',
             ],
-            [
-                'code' => 'BW',
-                'name' => 'Bayu Wings',
-                'brand_color' => '#0284C7',
+            2 => [
+                'code' => 'QG',
+                'name' => 'Citilink',
+                'brand_color' => '#008444',
             ],
-            [
-                'code' => 'CA',
-                'name' => 'Camar Air',
-                'brand_color' => '#F26A21',
+            3 => [
+                'code' => 'JT',
+                'name' => 'Lion Air',
+                'brand_color' => '#D32F2F',
             ],
-            [
-                'code' => 'PJ',
-                'name' => 'Pelita Jet',
-                'brand_color' => '#059669',
+            4 => [
+                'code' => 'ID',
+                'name' => 'Batik Air',
+                'brand_color' => '#880E4F',
+            ],
+            5 => [
+                'code' => 'IU',
+                'name' => 'Super Air Jet',
+                'brand_color' => '#C59B27',
+            ],
+            6 => [
+                'code' => 'IP',
+                'name' => 'Pelita Air',
+                'brand_color' => '#008850',
+            ],
+            7 => [
+                'code' => 'SJ',
+                'name' => 'Sriwijaya Air',
+                'brand_color' => '#155E75',
+            ],
+            8 => [
+                'code' => 'QZ',
+                'name' => 'AirAsia Indonesia',
+                'brand_color' => '#E11D48',
             ],
         ];
 
-        foreach ($airlines as $airline) {
-            Airline::updateOrCreate(['code' => $airline['code']], $airline);
+        foreach ($realAirlines as $id => $airline) {
+            DB::table('airlines')->updateOrInsert(
+                ['id' => $id],
+                array_merge($airline, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
+        }
+
+        // Update flight numbers in flights table to match the new real airline codes
+        $flightPrefixes = [
+            1 => 'GA',
+            2 => 'QG',
+            3 => 'JT',
+            4 => 'ID',
+            5 => 'IU',
+            6 => 'IP',
+            7 => 'SJ',
+            8 => 'QZ',
+        ];
+
+        foreach ($flightPrefixes as $airlineId => $prefix) {
+            // Update flight numbers where airline_id matches
+            DB::statement("
+                UPDATE flights 
+                SET flight_number = CONCAT('{$prefix}', SUBSTRING(flight_number, 3))
+                WHERE airline_id = {$airlineId}
+            ");
         }
     }
 }
