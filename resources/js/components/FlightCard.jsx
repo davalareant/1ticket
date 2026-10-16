@@ -5,6 +5,7 @@ import { formatRupiah } from '../utils/formatters';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
 import FlightDetailModal from './FlightDetailModal';
+import AirlineLogo from './AirlineLogo';
 
 export default function FlightCard({ flight, index = 0, onSelectFlight }) {
     const [isHovered, setIsHovered] = useState(false);
@@ -35,12 +36,7 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                     {/* Airline & Flight Number header */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-white text-sm shadow-xs"
-                                style={{ backgroundColor: flight.airline?.brand_color || '#0E2A47' }}
-                            >
-                                {flight.airline?.code}
-                            </div>
+                            <AirlineLogo airline={flight.airline} size="md" />
                             <div>
                                 <h3 className="font-bold text-base text-[#0E2A47] leading-tight">
                                     {flight.airline?.name}

@@ -1,5 +1,6 @@
 import React from 'react';
 import Modal from './ui/Modal';
+import AirlineLogo from './AirlineLogo';
 import { formatRupiah } from '../utils/formatters';
 import {
     Luggage,
@@ -29,15 +30,18 @@ export default function FlightDetailModal({ isOpen, onClose, flight }) {
             size="lg"
         >
             <div className="space-y-6">
-                {/* Route & Schedule summary banner */}
+                {/* Route & Schedule summary banner with AirlineLogo */}
                 <div className="p-4 bg-[#F6F8FA] rounded-2xl border border-[#CBD5E1]/70 flex items-center justify-between">
-                    <div>
-                        <span className="font-mono text-xl font-black text-[#0E2A47]">
-                            {flight.local_departure_time}
-                        </span>
-                        <p className="font-mono text-xs font-bold text-[#0E2A47]">
-                            {flight.origin?.iata_code} • {flight.origin?.city}
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <AirlineLogo airline={flight.airline} size="md" />
+                        <div>
+                            <span className="font-mono text-xl font-black text-[#0E2A47]">
+                                {flight.local_departure_time}
+                            </span>
+                            <p className="font-mono text-xs font-bold text-[#0E2A47]">
+                                {flight.origin?.iata_code} • {flight.origin?.city}
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex flex-col items-center px-4">

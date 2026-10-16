@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import Stepper from '../components/Stepper';
 import FlightAddonsSection from '../components/FlightAddonsSection';
+import AirlineLogo from '../components/AirlineLogo';
 import {
     Plane,
     Calendar,
@@ -172,12 +173,7 @@ export default function SummaryPage() {
                         <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
                             <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                                 <div className="flex items-center gap-2.5">
-                                    <div
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs"
-                                        style={{ backgroundColor: selectedFlight.airline?.brand_color || '#0E2A47' }}
-                                    >
-                                        {selectedFlight.airline?.code}
-                                    </div>
+                                    <AirlineLogo airline={selectedFlight.airline} size="sm" />
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs font-bold text-[#F26A21] uppercase">
@@ -241,12 +237,7 @@ export default function SummaryPage() {
                             <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
                                 <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                                     <div className="flex items-center gap-2.5">
-                                        <div
-                                            className="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs"
-                                            style={{ backgroundColor: returnFlight.airline?.brand_color || '#0E2A47' }}
-                                        >
-                                            {returnFlight.airline?.code}
-                                        </div>
+                                        <AirlineLogo airline={returnFlight.airline} size="sm" />
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs font-bold text-emerald-600 uppercase flex items-center gap-1">

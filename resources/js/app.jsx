@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { BookingProvider } from './context/BookingContext';
 import Navbar from './components/Navbar';
@@ -22,20 +22,31 @@ import AdminPage from './pages/AdminPage';
 import { ToastProvider } from './components/ui/Toast';
 
 import BottomNav from './components/BottomNav';
-
-import ScrollFlightProgress from './components/ScrollFlightProgress';
 import ScrollToTopPlane from './components/ScrollToTopPlane';
+
+// Komponen pereset posisi scroll saat pergantian halaman (UX fix)
+function ScrollToTopOnNavigate() {
+    const { pathname } = useLocation();
+
+    React.useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'instant'
+        });
+    }, [pathname]);
+
+    return null;
+}
 
 function App() {
     return (
         <BrowserRouter>
+            <ScrollToTopOnNavigate />
             <AuthProvider>
                 <BookingProvider>
                     <ToastProvider>
                         <div className="flex flex-col min-h-screen bg-[#F6F8FA] text-[#0E2A47] relative">
-                            {/* Scroll Flight Progress Bar at Top */}
-                            <ScrollFlightProgress />
-
                             <Navbar />
                             <main className="flex-1 pb-16 md:pb-0">
                                 <Routes>

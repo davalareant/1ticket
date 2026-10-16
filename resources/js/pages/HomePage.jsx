@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti';
 import FlightTakeoffHero from '../components/FlightTakeoffHero';
 import FlightSearchForm from '../components/FlightSearchForm';
 import FlightScrollSwipeTransition from '../components/FlightScrollSwipeTransition';
+import AirlineLogo from '../components/AirlineLogo';
 import { useToast } from '../components/ui/Toast';
 import { api } from '../api/client';
 import { formatRupiah, formatDate } from '../utils/formatters';
@@ -468,9 +469,7 @@ export default function HomePage() {
                                 className="p-5 rounded-2xl bg-[#F6F8FA] border border-[#CBD5E1]/60 hover:border-[#F26A21] hover:shadow-md transition-all flex flex-col justify-between"
                             >
                                 <div>
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-[#CBD5E1]/70 flex items-center justify-center font-mono font-black text-sm text-[#0E2A47] mb-3 shadow-xs">
-                                        {airline.code}
-                                    </div>
+                                    <AirlineLogo code={airline.code} airline={{ name: airline.name }} size="md" className="mb-3" />
                                     <h4 className="font-bold text-sm text-[#0E2A47] tracking-tight">
                                         {airline.name}
                                     </h4>

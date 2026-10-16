@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import AirlineLogo from '../components/AirlineLogo';
 import {
     Plane,
     Ticket,
@@ -505,12 +506,7 @@ export default function AdminPage() {
                                             <tr key={f.id} className="hover:bg-[#F8FAFC] transition-colors">
                                                 <td className="py-3.5 px-4">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div
-                                                            className="w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-white text-[11px]"
-                                                            style={{ backgroundColor: f.airline?.brand_color || '#0E2A47' }}
-                                                        >
-                                                            {f.airline?.code}
-                                                        </div>
+                                                        <AirlineLogo airline={f.airline} size="xs" />
                                                         <div>
                                                             <span className="font-bold text-[#0E2A47] block">
                                                                 {f.airline?.name}

@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useBooking } from '../context/BookingContext';
 import Stepper from '../components/Stepper';
+import AirlineLogo from '../components/AirlineLogo';
 import { User, Phone, Mail, Shield, ArrowRight, Plane, AlertCircle } from 'lucide-react';
 
 export default function PassengerPage() {
@@ -270,12 +271,7 @@ export default function PassengerPage() {
                             {/* Flight Card Mini */}
                             <div className="space-y-3 text-xs">
                                 <div className="flex items-center gap-2.5">
-                                    <div
-                                        className="w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs"
-                                        style={{ backgroundColor: selectedFlight.airline?.brand_color || '#0E2A47' }}
-                                    >
-                                        {selectedFlight.airline?.code}
-                                    </div>
+                                    <AirlineLogo airline={selectedFlight.airline} size="sm" />
                                     <span className="font-bold text-sm text-[#0E2A47]">
                                         {selectedFlight.airline?.name} ({selectedFlight.flight_number})
                                     </span>

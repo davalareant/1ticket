@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import FlightCard from '../components/FlightCard';
+import AirlineLogo from '../components/AirlineLogo';
 import AirplaneLoader from '../components/AirplaneLoader';
 import FlightSearchForm from '../components/FlightSearchForm';
 import EmptyState from '../components/ui/EmptyState';
@@ -418,7 +419,10 @@ export default function SearchPage() {
                                                     isSelected ? 'bg-[#0E2A47] text-white' : 'hover:bg-[#F6F8FA] text-[#0E2A47]'
                                                 }`}
                                             >
-                                                <span>{a.name}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <AirlineLogo airline={a} size="xs" />
+                                                    <span>{a.name}</span>
+                                                </div>
                                                 <span className="font-mono text-[10px] bg-black/10 px-1.5 py-0.5 rounded">
                                                     {a.code}
                                                 </span>

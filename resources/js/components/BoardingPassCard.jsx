@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { Plane, Calendar, Clock, User, QrCode, Printer, CheckCircle, Repeat } from 'lucide-react';
 import { formatDate } from '../utils/formatters';
+import AirlineLogo from './AirlineLogo';
 
 export default function BoardingPassCard({ booking, passenger, index = 0, isReturn = false }) {
     const [stubHovered, setStubHovered] = useState(false);
@@ -71,12 +72,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0, isRetu
                 {/* Header: Airline, Class & Status */}
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
                     <div className="flex items-center gap-3">
-                        <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-white shadow-xs"
-                            style={{ backgroundColor: airline?.brand_color || '#0E2A47' }}
-                        >
-                            {airline?.code || '1T'}
-                        </div>
+                        <AirlineLogo airline={airline} size="md" />
                         <div>
                             <div className="flex items-center gap-2">
                                 <span className={`text-[11px] uppercase font-black tracking-widest px-2 py-0.5 rounded ${
