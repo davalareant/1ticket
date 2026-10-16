@@ -15,24 +15,32 @@ const MEAL_OPTIONS = [
     { id: 'snack', name: 'Roti Panggang & Kopi Toraja', desc: 'Roti bakar keju leleh ditemani seduhan kopi Toraja hangat', price: 35000 },
 ];
 
-export default function FlightAddonsSection({ addons, setAddons, passengerCount = 1 }) {
+export default function FlightAddonsSection({ addons = {}, setAddons, onChange, passengerCount = 1 }) {
+    const updateAddons = setAddons || onChange || (() => {});
+
+    const safeAddons = {
+        baggage_kg: addons?.baggage_kg || 0,
+        meals: addons?.meals || [],
+        insurance: !!addons?.insurance,
+    };
+
     const handleBaggageSelect = (kg) => {
-        setAddons((prev) => ({ ...prev, baggage_kg: kg }));
+        updateAddons((prev) => ({ ...(prev || safeAddons), baggage_kg: kg }));
     };
 
     const handleMealToggle = (meal) => {
-        setAddons((prev) => {
-            const currentMeals = prev.meals || [];
+        updateAddons((prev) => {
+            const currentMeals = prev?.meals || safeAddons.meals || [];
             const exists = currentMeals.some((m) => m.id === meal.id);
             const nextMeals = exists
                 ? currentMeals.filter((m) => m.id !== meal.id)
                 : [...currentMeals, meal];
-            return { ...prev, meals: nextMeals };
+            return { ...(prev || safeAddons), meals: nextMeals };
         });
     };
 
     const handleInsuranceToggle = () => {
-        setAddons((prev) => ({ ...prev, insurance: !prev.insurance }));
+        updateAddons((prev) => ({ ...(prev || safeAddons), insurance: !prev?.insurance }));
     };
 
     return (

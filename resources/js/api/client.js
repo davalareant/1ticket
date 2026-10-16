@@ -56,6 +56,7 @@ export const api = {
     checkInBooking: (code, flightType = 'outbound') => apiRequest(`/bookings/${code}/check-in`, { method: 'POST', body: { flight_type: flightType } }),
 
     // Vouchers
+    getActiveVouchers: () => apiRequest('/vouchers/active'),
     validateVoucher: (code, subtotal) => apiRequest('/vouchers/validate', {
         method: 'POST',
         body: { code, subtotal },
@@ -70,5 +71,41 @@ export const api = {
     simulatePayment: (reference, action) => apiRequest(`/payments/${reference}/simulate`, {
         method: 'POST',
         body: { action },
+    }),
+
+    // Admin Portal
+    getAdminStats: () => apiRequest('/admin/stats'),
+    getAdminMeta: () => apiRequest('/admin/meta'),
+    getAdminFlights: () => apiRequest('/admin/flights'),
+    createAdminFlight: (payload) => apiRequest('/admin/flights', {
+        method: 'POST',
+        body: payload,
+    }),
+    updateAdminFlight: (id, payload) => apiRequest(`/admin/flights/${id}`, {
+        method: 'PUT',
+        body: payload,
+    }),
+    deleteAdminFlight: (id) => apiRequest(`/admin/flights/${id}`, {
+        method: 'DELETE',
+    }),
+    getAdminVouchers: () => apiRequest('/admin/vouchers'),
+    createAdminVoucher: (payload) => apiRequest('/admin/vouchers', {
+        method: 'POST',
+        body: payload,
+    }),
+    updateAdminVoucher: (id, payload) => apiRequest(`/admin/vouchers/${id}`, {
+        method: 'PUT',
+        body: payload,
+    }),
+    deleteAdminVoucher: (id) => apiRequest(`/admin/vouchers/${id}`, {
+        method: 'DELETE',
+    }),
+    getAdminBookings: (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return apiRequest(`/admin/bookings?${query}`);
+    },
+    updateAdminBookingStatus: (code, status) => apiRequest(`/admin/bookings/${code}/status`, {
+        method: 'PUT',
+        body: { status },
     }),
 };

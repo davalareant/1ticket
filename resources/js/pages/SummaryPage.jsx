@@ -357,6 +357,7 @@ export default function SummaryPage() {
                         {/* 4. Addons Selection */}
                         <FlightAddonsSection
                             addons={addons}
+                            setAddons={setAddons}
                             onChange={setAddons}
                             passengerCount={passengerCount}
                         />

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlightTakeoffHero from '../components/FlightTakeoffHero';
 import FlightSearchForm from '../components/FlightSearchForm';
 import { useToast } from '../components/ui/Toast';
+import { api } from '../api/client';
+import { formatRupiah, formatDate } from '../utils/formatters';
 import {
     Plane,
     ShieldCheck,
@@ -132,17 +134,44 @@ const AIRLINE_PARTNERS = [
 
 export default function HomePage() {
     const navigate = useNavigate();
-    const { addToast } = useToast();
+    const { showToast } = useToast();
     const [copiedCode, setCopiedCode] = useState(null);
+    const [promoList, setPromoList] = useState(PROMO_BANNERS);
+
+    useEffect(() => {
+        api.getActiveVouchers()
+            .then((data) => {
+                if (data && data.length > 0) {
+                    const gradients = [
+                        'from-[#0E2A47] via-[#1E4E79] to-[#0A1C30]',
+                        'from-[#F26A21] via-[#E0530B] to-[#B33E04]',
+                        'from-[#0369A1] via-[#0284C7] to-[#0E2A47]',
+                    ];
+                    const images = [
+                        'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=600&q=80',
+                        'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=600&q=80',
+                        'https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=600&q=80',
+                    ];
+                    const mapped = data.slice(0, 6).map((v, idx) => ({
+                        id: `voucher-${v.id}`,
+                        title: v.name,
+                        subtitle: v.description || (v.discount_type === 'percent' ? `Diskon ${v.discount_value}% untuk rute domestik` : `Potongan langsung ${formatRupiah(v.discount_value)}`),
+                        code: v.code,
+                        validUntil: v.expires_at ? formatDate(v.expires_at.slice(0, 10)) : 'Sepanjang Tahun',
+                        gradient: gradients[idx % gradients.length],
+                        badge: v.discount_type === 'percent' ? `${v.discount_value}% OFF` : 'POTONGAN HARGA',
+                        image: images[idx % images.length],
+                    }));
+                    setPromoList(mapped);
+                }
+            })
+            .catch((err) => console.log('Error loading dynamic vouchers:', err));
+    }, []);
 
     const handleCopyVoucher = (code) => {
         navigator.clipboard.writeText(code);
         setCopiedCode(code);
-        addToast({
-            type: 'success',
-            title: 'Kupon Berhasil Disalin',
-            message: `Kode ${code} siap digunakan pada ringkasan pemesanan.`,
-        });
+        showToast(`Kupon ${code} berhasil disalin! Siap digunakan saat checkout.`, 'success');
         setTimeout(() => setCopiedCode(null), 2500);
     };
 
@@ -181,7 +210,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {PROMO_BANNERS.map((promo) => (
+                    {promoList.map((promo) => (
                         <div
                             key={promo.id}
                             className="group relative rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-[#CBD5E1]/60 flex flex-col justify-between"

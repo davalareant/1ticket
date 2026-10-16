@@ -3,12 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class VoucherController extends Controller
 {
+    public function getActiveVouchers()
+    {
+        $vouchers = Voucher::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
+            ->whereColumn('used_count', '<', 'quota')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return response()->json($vouchers);
+    }
     public function validateVoucher(Request $request)
     {
         $request->validate([

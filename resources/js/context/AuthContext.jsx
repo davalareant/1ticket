@@ -57,17 +57,23 @@ export function AuthProvider({ children }) {
         return login('demo@1tiket.test', 'password');
     };
 
+    const loginAsAdmin = async () => {
+        return login('admin@1tiket.com', 'admin123');
+    };
+
     return (
         <AuthContext.Provider
             value={{
                 user,
                 token,
                 isAuthenticated: !!user,
+                isAdmin: user?.role === 'admin',
                 loading,
                 login,
                 register,
                 logout,
                 loginAsDemo,
+                loginAsAdmin,
             }}
         >
             {children}

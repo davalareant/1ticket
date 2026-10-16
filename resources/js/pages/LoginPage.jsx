@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Sparkles, ArrowRight, AlertCircle, Plane, ShieldCheck, Ticket } from 'lucide-react';
 
 export default function LoginPage() {
-    const { login, loginAsDemo } = useAuth();
+    const { login, loginAsDemo, loginAsAdmin } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const redirectUrl = searchParams.get('redirect') || '/';
@@ -13,6 +13,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [demoLoading, setDemoLoading] = useState(false);
+    const [adminLoading, setAdminLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
@@ -40,6 +41,19 @@ export default function LoginPage() {
             setError(err.message || 'Gagal masuk akun demo.');
         } finally {
             setDemoLoading(false);
+        }
+    };
+
+    const handleAdminLogin = async () => {
+        setAdminLoading(true);
+        setError('');
+        try {
+            await loginAsAdmin();
+            navigate('/admin', { replace: true });
+        } catch (err) {
+            setError(err.message || 'Gagal masuk akun admin.');
+        } finally {
+            setAdminLoading(false);
         }
     };
 
@@ -97,24 +111,38 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    {/* 1-Click Demo Account Quick Button */}
-                    <div className="bg-[#CFE5F5]/40 border border-[#0E2A47]/10 p-4 rounded-2xl space-y-2">
+                    {/* 1-Click Quick Buttons for Demo & Admin */}
+                    <div className="bg-[#CFE5F5]/40 border border-[#0E2A47]/10 p-3.5 rounded-2xl space-y-2">
                         <span className="text-[11px] text-[#5B6B7B] block font-medium">
-                            Uji coba alur untuk penguji tugas & dosen:
+                            Pilih akun cepat untuk pengujian:
                         </span>
-                        <button
-                            type="button"
-                            id="btn-login-demo-account"
-                            onClick={handleDemoLogin}
-                            disabled={demoLoading}
-                            className="w-full py-2.5 px-4 bg-[#0E2A47] hover:bg-[#1a446c] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                        >
-                            <Sparkles className="w-4 h-4 text-[#F26A21]" />
-                            <span>{demoLoading ? 'Masuk...' : 'Masuk Langsung dengan Akun Demo'}</span>
-                        </button>
-                        <span className="text-[10px] text-[#5B6B7B] font-mono block text-center">
-                            demo@1tiket.test / password
-                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                id="btn-login-demo-account"
+                                onClick={handleDemoLogin}
+                                disabled={demoLoading || adminLoading}
+                                className="w-full py-2 px-3 bg-[#0E2A47] hover:bg-[#1a446c] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                            >
+                                <Sparkles className="w-3.5 h-3.5 text-[#F26A21]" />
+                                <span>{demoLoading ? 'Masuk...' : 'Akun Penumpang'}</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                id="btn-login-admin-account"
+                                onClick={handleAdminLogin}
+                                disabled={demoLoading || adminLoading}
+                                className="w-full py-2 px-3 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                            >
+                                <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                                <span>{adminLoading ? 'Masuk...' : 'Portal Admin'}</span>
+                            </button>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-[#5B6B7B] font-mono px-1">
+                            <span>demo@1tiket.test</span>
+                            <span>admin@1tiket.com</span>
+                        </div>
                     </div>
 
                     {error && (

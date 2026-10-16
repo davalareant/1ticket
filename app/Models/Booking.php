@@ -71,6 +71,11 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function payment()
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
     public function checkAndExpire(): bool
     {
         if ($this->status === 'pending_payment' && $this->expires_at && $this->expires_at->isPast()) {

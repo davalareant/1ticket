@@ -17,6 +17,7 @@ import TicketPage from './pages/TicketPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AdminPage from './pages/AdminPage';
 
 import { ToastProvider } from './components/ui/Toast';
 
@@ -42,6 +43,7 @@ function App() {
                                     <Route path="/tiket-saya" element={<MyBookingsPage />} />
                                     <Route path="/masuk" element={<LoginPage />} />
                                     <Route path="/daftar" element={<RegisterPage />} />
+                                    <Route path="/admin" element={<AdminPage />} />
                                 </Routes>
                             </main>
                             <Footer />

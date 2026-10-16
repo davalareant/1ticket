@@ -15,7 +15,18 @@ class DemoUserSeeder extends Seeder
             [
                 'name' => 'Budi Santoso',
                 'phone' => '081234567890',
+                'role' => 'customer',
                 'password' => Hash::make('password'),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'admin@1tiket.com'],
+            [
+                'name' => 'Administrator 1Tiket',
+                'phone' => '081299998888',
+                'role' => 'admin',
+                'password' => Hash::make('admin123'),
             ]
         );
     }
