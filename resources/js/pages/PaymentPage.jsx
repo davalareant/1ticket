@@ -202,7 +202,7 @@ export default function PaymentPage() {
                 )}
             </AnimatePresence>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8 space-y-6">
                 {/* 15-Minute Countdown Ring (N12) */}
                 <PaymentCountdown
                     expiresAt={booking.expires_at}

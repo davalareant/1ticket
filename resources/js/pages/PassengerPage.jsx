@@ -91,7 +91,7 @@ export default function PassengerPage() {
                 <Stepper currentStep={1} />
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Form: Contact & Passengers */}
                     <div className="lg:col-span-8 space-y-6">

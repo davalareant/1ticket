@@ -20,6 +20,8 @@ import RegisterPage from './pages/RegisterPage';
 
 import { ToastProvider } from './components/ui/Toast';
 
+import BottomNav from './components/BottomNav';
+
 function App() {
     return (
         <BrowserRouter>
@@ -28,7 +30,7 @@ function App() {
                     <ToastProvider>
                         <div className="flex flex-col min-h-screen bg-[#F6F8FA] text-[#0E2A47]">
                             <Navbar />
-                            <main className="flex-1">
+                            <main className="flex-1 pb-16 md:pb-0">
                                 <Routes>
                                     <Route path="/" element={<HomePage />} />
                                     <Route path="/cari" element={<SearchPage />} />
@@ -43,6 +45,7 @@ function App() {
                                 </Routes>
                             </main>
                             <Footer />
+                            <BottomNav />
                         </div>
                     </ToastProvider>
                 </BookingProvider>

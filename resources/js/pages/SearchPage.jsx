@@ -5,7 +5,8 @@ import { useBooking } from '../context/BookingContext';
 import FlightCard from '../components/FlightCard';
 import AirplaneLoader from '../components/AirplaneLoader';
 import FlightSearchForm from '../components/FlightSearchForm';
-import { Filter, ArrowUpDown, Calendar, AlertCircle, ChevronDown, RefreshCw } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
+import { Filter, ArrowUpDown, Calendar, AlertCircle, ChevronDown, RefreshCw, CheckCircle2, SlidersHorizontal } from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
 export default function SearchPage() {
@@ -29,6 +30,7 @@ export default function SearchPage() {
     const [selectedTimeSlot, setSelectedTimeSlot] = useState(''); // pagi, siang, sore, malam
 
     const [showEditSearch, setShowEditSearch] = useState(false);
+    const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
     const fetchFlights = (targetDate = date) => {
         setLoading(true);
@@ -47,7 +49,7 @@ export default function SearchPage() {
         if (selectedTimeSlot) params.time_filter = selectedTimeSlot;
 
         // Guarantee minimum 600ms loading duration for smooth animation (N6)
-        const minTimePromise = new Promise((resolve) => setTimeout(resolve, 650));
+        const minTimePromise = new Promise((resolve) => setTimeout(resolve, 600));
         const apiPromise = api.searchFlights(params);
 
         Promise.all([apiPromise, minTimePromise])
@@ -180,101 +182,238 @@ export default function SearchPage() {
                 </div>
             )}
 
+            {/* Main 2-Column Responsive Layout */}
             <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8">
-                {/* Filter & Sorting Controls Bar (R2 & R3) */}
-                <div className="bg-white rounded-2xl border border-[#CBD5E1]/70 p-4 mb-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
-                    {/* Time Slot Filter Buttons (R3) */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-bold text-[#5B6B7B] mr-1 flex items-center gap-1">
-                            <Filter className="w-3.5 h-3.5" />
-                            Waktu:
-                        </span>
-                        {[
-                            { id: '', label: 'Semua' },
-                            { id: 'pagi', label: 'Pagi (04-11)' },
-                            { id: 'siang', label: 'Siang (11-15)' },
-                            { id: 'sore', label: 'Sore (15-18.30)' },
-                            { id: 'malam', label: 'Malam (18.30-04)' },
-                        ].map((slot) => (
-                            <button
-                                key={slot.id}
-                                onClick={() => setSelectedTimeSlot(slot.id)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                    selectedTimeSlot === slot.id
-                                        ? 'bg-[#0E2A47] text-white shadow-xs'
-                                        : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#5B6B7B] border border-[#CBD5E1]'
-                                }`}
-                            >
-                                {slot.label}
-                            </button>
-                        ))}
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left Sticky Filter Sidebar (Desktop >= lg) */}
+                    <aside className="hidden lg:block lg:col-span-3 sticky top-36 space-y-6">
+                        <div className="bg-white rounded-[20px] border border-[#CBD5E1]/70 p-6 shadow-xs space-y-6">
+                            <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
+                                <h3 className="font-bold text-sm text-[#0E2A47] flex items-center gap-2">
+                                    <SlidersHorizontal className="w-4 h-4 text-[#F26A21]" />
+                                    Filter Penerbangan
+                                </h3>
+                                {(selectedAirline || selectedTimeSlot) && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectedAirline('');
+                                            setSelectedTimeSlot('');
+                                        }}
+                                        className="text-xs text-[#F26A21] hover:underline font-semibold cursor-pointer"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
 
-                    {/* Sorting Dropdown (R2) */}
-                    <div className="flex items-center gap-2">
-                        <ArrowUpDown className="w-4 h-4 text-[#5B6B7B]" />
-                        <label className="text-xs font-bold text-[#5B6B7B]">Urutkan:</label>
-                        <select
-                            id="select-sort"
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl px-3 py-1.5 text-xs font-bold text-[#0E2A47] focus:ring-2 focus:ring-[#F26A21] cursor-pointer"
-                        >
-                            <option value="price_asc">Harga Termurah</option>
-                            <option value="departure_asc">Berangkat Paling Awal</option>
-                            <option value="duration_asc">Durasi Tersingkat</option>
-                        </select>
+                            {/* Time Filter */}
+                            <div>
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#5B6B7B] mb-3">
+                                    Waktu Keberangkatan
+                                </h4>
+                                <div className="space-y-2">
+                                    {[
+                                        { id: '', label: 'Semua Waktu' },
+                                        { id: 'pagi', label: 'Pagi (04.00 - 11.00)' },
+                                        { id: 'siang', label: 'Siang (11.00 - 15.00)' },
+                                        { id: 'sore', label: 'Sore (15.00 - 18.30)' },
+                                        { id: 'malam', label: 'Malam (18.30 - 04.00)' },
+                                    ].map((slot) => (
+                                        <button
+                                            key={slot.id}
+                                            type="button"
+                                            onClick={() => setSelectedTimeSlot(slot.id)}
+                                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                                                selectedTimeSlot === slot.id
+                                                    ? 'bg-[#0E2A47] text-white shadow-xs'
+                                                    : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#0E2A47] border border-[#CBD5E1]/60'
+                                            }`}
+                                        >
+                                            <span>{slot.label}</span>
+                                            {selectedTimeSlot === slot.id && <CheckCircle2 className="w-3.5 h-3.5 text-[#F26A21]" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Airline Filter */}
+                            {airlines.length > 0 && (
+                                <div className="pt-4 border-t border-[#E2E8F0]">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#5B6B7B] mb-3">
+                                        Maskapai
+                                    </h4>
+                                    <div className="space-y-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedAirline('')}
+                                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                                                selectedAirline === ''
+                                                    ? 'bg-[#0E2A47] text-white shadow-xs'
+                                                    : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#0E2A47] border border-[#CBD5E1]/60'
+                                            }`}
+                                        >
+                                            <span>Semua Maskapai</span>
+                                            {selectedAirline === '' && <CheckCircle2 className="w-3.5 h-3.5 text-[#F26A21]" />}
+                                        </button>
+                                        {airlines.map((a) => (
+                                            <button
+                                                key={a.id}
+                                                type="button"
+                                                onClick={() => setSelectedAirline(String(a.id))}
+                                                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                                                    selectedAirline === String(a.id)
+                                                        ? 'bg-[#0E2A47] text-white shadow-xs'
+                                                        : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#0E2A47] border border-[#CBD5E1]/60'
+                                                }`}
+                                            >
+                                                <span>{a.name}</span>
+                                                {selectedAirline === String(a.id) && <CheckCircle2 className="w-3.5 h-3.5 text-[#F26A21]" />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Policy note */}
+                            <div className="p-3 bg-[#CFE5F5]/40 rounded-xl border border-[#0E2A47]/10 text-[11px] text-[#0E2A47] leading-relaxed">
+                                Seluruh tiket sudah mencakup bagasi kabin 7kg dan biaya asuransi iuran wajib Jasa Raharja.
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Right Column: Search Results and Sorting */}
+                    <div className="col-span-1 lg:col-span-9 space-y-4">
+                        {/* Sorting and Mobile Filter Toggle */}
+                        <div className="bg-white rounded-[20px] border border-[#CBD5E1]/70 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+                            {/* Mobile Filter Toggle */}
+                            <div className="flex lg:hidden items-center gap-2">
+                                <button
+                                    onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+                                    className="px-3 py-1.5 bg-[#0E2A47] text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                                >
+                                    <Filter className="w-3.5 h-3.5" />
+                                    <span>Filter ({selectedTimeSlot ? '1' : '0'})</span>
+                                </button>
+                            </div>
+
+                            {/* Quick Slot Filter on Tablet/Mobile */}
+                            <div className="hidden sm:flex lg:hidden items-center gap-1.5 flex-wrap">
+                                {[
+                                    { id: '', label: 'Semua' },
+                                    { id: 'pagi', label: 'Pagi' },
+                                    { id: 'siang', label: 'Siang' },
+                                    { id: 'sore', label: 'Sore' },
+                                    { id: 'malam', label: 'Malam' },
+                                ].map((slot) => (
+                                    <button
+                                        key={slot.id}
+                                        onClick={() => setSelectedTimeSlot(slot.id)}
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                            selectedTimeSlot === slot.id
+                                                ? 'bg-[#0E2A47] text-white shadow-xs'
+                                                : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#5B6B7B] border border-[#CBD5E1]'
+                                        }`}
+                                    >
+                                        {slot.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Sorting Dropdown (R2) */}
+                            <div className="flex items-center gap-2 ml-auto">
+                                <ArrowUpDown className="w-4 h-4 text-[#5B6B7B]" />
+                                <label className="text-xs font-bold text-[#5B6B7B]">Urutkan:</label>
+                                <select
+                                    id="select-sort"
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl px-3 py-1.5 text-xs font-bold text-[#0E2A47] focus:ring-2 focus:ring-[#F26A21] cursor-pointer"
+                                >
+                                    <option value="price_asc">Harga Termurah</option>
+                                    <option value="departure_asc">Berangkat Paling Awal</option>
+                                    <option value="duration_asc">Durasi Tersingkat</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Mobile Filter Drawer / Box */}
+                        {mobileFilterOpen && (
+                            <div className="lg:hidden bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-md space-y-4">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#0E2A47]">
+                                    Pilih Waktu Keberangkatan
+                                </h4>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        { id: '', label: 'Semua Waktu' },
+                                        { id: 'pagi', label: 'Pagi (04.00 - 11.00)' },
+                                        { id: 'siang', label: 'Siang (11.00 - 15.00)' },
+                                        { id: 'sore', label: 'Sore (15.00 - 18.30)' },
+                                        { id: 'malam', label: 'Malam (18.30 - 04.00)' },
+                                    ].map((slot) => (
+                                        <button
+                                            key={slot.id}
+                                            onClick={() => {
+                                                setSelectedTimeSlot(slot.id);
+                                                setMobileFilterOpen(false);
+                                            }}
+                                            className={`p-2 rounded-xl text-xs font-bold text-left ${
+                                                selectedTimeSlot === slot.id
+                                                    ? 'bg-[#0E2A47] text-white'
+                                                    : 'bg-[#F6F8FA] text-[#0E2A47] border border-[#CBD5E1]'
+                                            }`}
+                                        >
+                                            {slot.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Main Flight Cards Area */}
+                        {loading ? (
+                            <AirplaneLoader message="Menyiapkan jadwal penerbangan terbaik..." />
+                        ) : error ? (
+                            <div className="bg-red-50 border border-red-200 rounded-[20px] p-8 text-center max-w-lg mx-auto">
+                                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                                <h3 className="text-lg font-bold text-red-800">Gagal Mengambil Jadwal</h3>
+                                <p className="text-sm text-red-600 mt-1 mb-4">{error}</p>
+                                <button
+                                    onClick={() => fetchFlights(date)}
+                                    className="px-5 py-2.5 bg-[#0E2A47] text-white font-bold rounded-xl text-xs flex items-center gap-2 mx-auto cursor-pointer"
+                                >
+                                    <RefreshCw className="w-4 h-4" />
+                                    Coba Lagi
+                                </button>
+                            </div>
+                        ) : searchResult?.flights?.length === 0 ? (
+                            /* Helpful Empty State (R4) */
+                            <EmptyState
+                                icon={Calendar}
+                                title="Tidak Ada Penerbangan Ditemukan"
+                                description={`Tidak ditemukan jadwal penerbangan langsung untuk rute ${origin} ke ${destination} pada tanggal ${date} dengan kriteria yang dipilih.`}
+                                actionLabel="Ubah Tanggal atau Filter"
+                                onAction={() => setShowEditSearch(true)}
+                            />
+                        ) : (
+                            /* Flight List with Stagger Animation (N7) */
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-xs text-[#5B6B7B] font-semibold px-1">
+                                    <span>Menampilkan {searchResult?.flights?.length} penerbangan langsung</span>
+                                    <span>Tarif transparan tanpa biaya tersembunyi</span>
+                                </div>
+
+                                {searchResult?.flights?.map((flight, idx) => (
+                                    <FlightCard
+                                        key={flight.id}
+                                        flight={flight}
+                                        index={idx}
+                                        onSelectFlight={handleSelectFlight}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {/* Main Content Area */}
-                {loading ? (
-                    <AirplaneLoader message="Menyiapkan jadwal penerbangan terbaik…" />
-                ) : error ? (
-                    <div className="bg-red-50 border border-red-200 rounded-3xl p-8 text-center max-w-lg mx-auto">
-                        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-                        <h3 className="text-lg font-bold text-red-800">Gagal Mengambil Jadwal</h3>
-                        <p className="text-sm text-red-600 mt-1 mb-4">{error}</p>
-                        <button
-                            onClick={() => fetchFlights(date)}
-                            className="px-5 py-2.5 bg-[#0E2A47] text-white font-bold rounded-xl text-xs flex items-center gap-2 mx-auto cursor-pointer"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            Coba Lagi
-                        </button>
-                    </div>
-                ) : searchResult?.flights?.length === 0 ? (
-                    /* Helpful Empty State (R4) */
-                    <div className="bg-white border border-[#CBD5E1]/70 rounded-3xl p-10 text-center max-w-lg mx-auto shadow-sm">
-                        <div className="w-16 h-16 bg-[#CFE5F5] rounded-3xl flex items-center justify-center text-[#0E2A47] mx-auto mb-4">
-                            <Calendar className="w-8 h-8 text-[#0E2A47]" />
-                        </div>
-                        <h3 className="text-xl font-bold text-[#0E2A47]">Tidak Ada Penerbangan Ditemukan</h3>
-                        <p className="text-sm text-[#5B6B7B] mt-2 mb-6">
-                            Tidak ditemukan jadwal penerbangan langsung untuk rute <strong>{origin} → {destination}</strong> pada tanggal {date} dengan kursi yang diminta.
-                        </p>
-                        <div className="p-4 bg-[#F6F8FA] rounded-2xl border border-[#CBD5E1] text-xs text-[#0E2A47] text-left mb-6">
-                            <strong>Saran:</strong> Coba pilih tanggal lain pada strip tanggal di atas, kurangi jumlah penumpang, atau pilih rute populer seperti CGK → DPS.
-                        </div>
-                    </div>
-                ) : (
-                    /* Flight List with Stagger Animation (N7) */
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between text-xs text-[#5B6B7B] font-semibold mb-2">
-                            <span>Menampilkan {searchResult?.flights?.length} jadwal penerbangan</span>
-                            <span>Tarif sudah termasuk pajak & bagasi kabin</span>
-                        </div>
-
-                        {searchResult?.flights?.map((flight, idx) => (
-                            <FlightCard
-                                key={flight.id}
-                                flight={flight}
-                                index={idx}
-                                onSelectFlight={handleSelectFlight}
-                            />
-                        ))}
-                    </div>
-                )}
             </div>
         </div>
     );

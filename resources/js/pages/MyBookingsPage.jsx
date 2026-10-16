@@ -85,16 +85,16 @@ export default function MyBookingsPage() {
 
     return (
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
-            <div className="bg-[#0E2A47] text-white py-10 border-b border-white/10">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl font-extrabold tracking-tight">Tiket Saya</h1>
+            <div className="bg-[#0E2A47] text-white py-12 border-b border-white/10">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+                    <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Tiket Saya</h1>
                     <p className="text-sm text-[#CFE5F5]/80 mt-1">
                         Daftar seluruh riwayat pemesanan tiket penerbangan Anda.
                     </p>
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8">
                 {/* Tabs (T2) */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-[#CBD5E1]">
                     {[
