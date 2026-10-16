@@ -1,87 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/Toast';
+import Modal from '../components/ui/Modal';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import EmptyState from '../components/ui/EmptyState';
 import AirplaneLoader from '../components/AirplaneLoader';
-import { Ticket, Plane, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import {
+    Ticket, Plane, Calendar, Clock, ArrowRight, AlertCircle,
+    CheckCircle2, XCircle, ShieldCheck, Sparkles, AlertTriangle
+} from 'lucide-react';
+import { formatRupiah, formatDate } from '../utils/formatters';
 
 export default function MyBookingsPage() {
     const { isAuthenticated, loading: authLoading } = useAuth();
-    const navigate = useNavigate();
+    const { addToast } = useToast();
 
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('all'); // all, pending_payment, paid, expired, cancelled
+    const [activeTab, setActiveTab] = useState('all');
+
+    // Check-in Modal state
+    const [checkInModalOpen, setCheckInModalOpen] = useState(false);
+    const [selectedBookingForCheckIn, setSelectedBookingForCheckIn] = useState(null);
+    const [agreeDg, setAgreeDg] = useState(false);
+    const [checkInSubmitting, setCheckInSubmitting] = useState(false);
+
+    const loadBookings = async () => {
+        setLoading(true);
+        try {
+            const data = await api.getBookings();
+            setBookings(data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            navigate('/masuk?redirect=/tiket-saya');
-            return;
-        }
-
         if (isAuthenticated) {
-            api.getBookings()
-                .then((data) => setBookings(data))
-                .catch((e) => console.error(e))
-                .finally(() => setLoading(false));
+            loadBookings();
         }
-    }, [isAuthenticated, authLoading]);
+    }, [isAuthenticated]);
 
-    const formatRp = (num) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            maximumFractionDigits: 0,
-        }).format(num);
-    };
+    if (!authLoading && !isAuthenticated) {
+        return <Navigate to="/masuk?redirect=/tiket-saya" replace />;
+    }
 
     const filteredBookings = bookings.filter((b) => {
         if (activeTab === 'all') return true;
         return b.status === activeTab;
     });
 
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case 'paid':
-                return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Terbayar
-                    </span>
-                );
-            case 'pending_payment':
-                return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 animate-pulse">
-                        <Clock className="w-3.5 h-3.5" />
-                        Menunggu Bayar
-                    </span>
-                );
-            case 'expired':
-                return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        Kedaluwarsa
-                    </span>
-                );
-            case 'cancelled':
-                return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">
-                        <XCircle className="w-3.5 h-3.5" />
-                        Dibatalkan
-                    </span>
-                );
-            default:
-                return null;
+    const handleOpenCheckIn = (booking) => {
+        setSelectedBookingForCheckIn(booking);
+        setAgreeDg(false);
+        setCheckInModalOpen(true);
+    };
+
+    const handlePerformCheckIn = async () => {
+        if (!selectedBookingForCheckIn || !agreeDg) return;
+
+        setCheckInSubmitting(true);
+        try {
+            await api.checkInBooking(selectedBookingForCheckIn.booking_code);
+            addToast('Check-in online berhasil! Boarding pass digital telah diterbitkan.', 'success');
+            setCheckInModalOpen(false);
+            await loadBookings();
+        } catch (err) {
+            addToast(err.message || 'Gagal melakukan check-in online.', 'error');
+        } finally {
+            setCheckInSubmitting(false);
         }
     };
 
-    if (loading || authLoading) {
-        return (
-            <div className="min-h-screen bg-[#F6F8FA]">
-                <AirplaneLoader message="Memuat riwayat tiket Anda…" />
-            </div>
-        );
-    }
+    const getStatusBadge = (status, isCheckedIn = false) => {
+        if (isCheckedIn) {
+            return (
+                <Badge variant="success" size="sm" dot>
+                    Checked-in
+                </Badge>
+            );
+        }
+
+        switch (status) {
+            case 'paid':
+                return (
+                    <Badge variant="success" size="sm" dot>
+                        Terbayar
+                    </Badge>
+                );
+            case 'pending_payment':
+                return (
+                    <Badge variant="warning" size="sm" dot>
+                        Menunggu Bayar
+                    </Badge>
+                );
+            case 'expired':
+                return (
+                    <Badge variant="neutral" size="sm">
+                        Kedaluwarsa
+                    </Badge>
+                );
+            case 'cancelled':
+                return (
+                    <Badge variant="danger" size="sm">
+                        Dibatalkan
+                    </Badge>
+                );
+            default:
+                return (
+                    <Badge variant="neutral" size="sm">
+                        {status}
+                    </Badge>
+                );
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
@@ -89,18 +126,18 @@ export default function MyBookingsPage() {
                 <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
                     <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Tiket Saya</h1>
                     <p className="text-sm text-[#CFE5F5]/80 mt-1">
-                        Daftar seluruh riwayat pemesanan tiket penerbangan Anda.
+                        Daftar seluruh riwayat pemesanan tiket penerbangan dan layanan check-in online Anda.
                     </p>
                 </div>
             </div>
 
             <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8">
-                {/* Tabs (T2) */}
+                {/* Tabs */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-[#CBD5E1]">
                     {[
                         { id: 'all', label: 'Semua Pesanan' },
                         { id: 'pending_payment', label: 'Menunggu Bayar' },
-                        { id: 'paid', label: 'Terbayar' },
+                        { id: 'paid', label: 'Terbayar & Siap Terbang' },
                         { id: 'expired', label: 'Kedaluwarsa' },
                         { id: 'cancelled', label: 'Dibatalkan' },
                     ].map((tab) => (
@@ -118,44 +155,43 @@ export default function MyBookingsPage() {
                     ))}
                 </div>
 
-                {filteredBookings.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-12 text-center border border-[#CBD5E1] shadow-xs max-w-md mx-auto">
-                        <div className="w-14 h-14 bg-[#CFE5F5] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Ticket className="w-7 h-7 text-[#0E2A47]" />
-                        </div>
-                        <h3 className="text-lg font-bold text-[#0E2A47]">Belum Ada Tiket</h3>
-                        <p className="text-xs text-[#5B6B7B] mt-1 mb-6">
-                            Anda belum memiliki pesanan dengan status ini.
-                        </p>
-                        <Link
-                            to="/"
-                            className="px-5 py-2.5 bg-[#F26A21] text-white font-bold rounded-xl text-xs inline-flex items-center gap-2"
-                        >
-                            <Plane className="w-4 h-4" />
-                            Cari Penerbangan
-                        </Link>
-                    </div>
+                {loading ? (
+                    <AirplaneLoader message="Memuat daftar pesanan Anda..." />
+                ) : filteredBookings.length === 0 ? (
+                    <EmptyState
+                        icon={Ticket}
+                        title="Belum Ada Tiket Ditemukan"
+                        description="Anda belum memiliki riwayat pesanan dengan status yang dipilih. Silakan cari jadwal penerbangan terbaik untuk merencanakan perjalanan."
+                        actionLabel="Cari Penerbangan Sekarang"
+                        onAction={() => window.location.href = '/'}
+                    />
                 ) : (
                     <div className="space-y-4">
                         {filteredBookings.map((b) => {
                             const flight = b.flight;
                             const origin = flight?.origin_airport || flight?.originAirport;
                             const dest = flight?.destination_airport || flight?.destinationAirport;
+                            const isCheckedIn = Boolean(b.check_in_at);
 
                             return (
                                 <div
                                     key={b.id}
-                                    className="bg-white rounded-3xl p-6 border border-[#CBD5E1]/70 hover:border-[#F26A21]/50 shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
+                                    className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 hover:border-[#F26A21]/50 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
                                 >
                                     <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            {getStatusBadge(b.status)}
+                                        <div className="flex items-center gap-2.5 flex-wrap">
+                                            {getStatusBadge(b.status, isCheckedIn)}
                                             <span className="font-mono text-xs font-bold text-[#5B6B7B]">
                                                 Kode: {b.booking_code}
                                             </span>
                                             <span className="text-xs text-[#5B6B7B]">
-                                                • {new Date(b.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                • Dipesan {formatDate(b.created_at)}
                                             </span>
+                                            {b.voucher_code && (
+                                                <Badge variant="warning" size="sm">
+                                                    Promo: {b.voucher_code}
+                                                </Badge>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-4">
@@ -169,7 +205,7 @@ export default function MyBookingsPage() {
                                             <div className="flex flex-col items-center px-2">
                                                 <Plane className="w-4 h-4 text-[#F26A21] rotate-90" />
                                                 <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1] my-1" />
-                                                <span className="text-[10px] text-[#5B6B7B]">
+                                                <span className="text-[10px] text-[#5B6B7B] font-mono">
                                                     {flight?.flight_number}
                                                 </span>
                                             </div>
@@ -182,8 +218,8 @@ export default function MyBookingsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="text-xs text-[#5B6B7B]">
-                                            <span>{b.passenger_count} Penumpang: </span>
+                                        <div className="text-xs text-[#5B6B7B] flex items-center gap-2 flex-wrap">
+                                            <span>{b.passenger_count} Penumpang:</span>
                                             <span className="font-semibold text-[#0E2A47]">
                                                 {b.passengers?.map((p) => p.full_name).join(', ')}
                                             </span>
@@ -193,21 +229,39 @@ export default function MyBookingsPage() {
                                     {/* Action button */}
                                     <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-between md:justify-center border-t md:border-t-0 pt-4 md:pt-0 border-[#E2E8F0] gap-3 shrink-0">
                                         <div>
-                                            <span className="text-xs text-[#5B6B7B] block md:text-right">Total Bayar</span>
-                                            <span className="font-mono text-xl font-black text-[#F26A21]">
-                                                {formatRp(b.total_amount)}
+                                            <span className="text-xs text-[#5B6B7B] block md:text-right font-medium">Total Pembayaran</span>
+                                            <span className="font-mono tabular-nums text-xl font-black text-[#F26A21]">
+                                                {formatRupiah(b.total_amount)}
                                             </span>
                                         </div>
 
                                         {b.status === 'paid' ? (
-                                            <Link
-                                                to={`/tiket/${b.booking_code}`}
-                                                id={`btn-ticket-${b.booking_code}`}
-                                                className="px-4 py-2 bg-[#0E2A47] hover:bg-[#F26A21] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
-                                            >
-                                                <span>Lihat E-Ticket</span>
-                                                <ArrowRight className="w-3.5 h-3.5" />
-                                            </Link>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {!isCheckedIn ? (
+                                                    <button
+                                                        type="button"
+                                                        id={`btn-checkin-${b.booking_code}`}
+                                                        onClick={() => handleOpenCheckIn(b)}
+                                                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                                                    >
+                                                        <ShieldCheck className="w-3.5 h-3.5" />
+                                                        <span>Check-in Online</span>
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                                        Siap Masuk Gate
+                                                    </span>
+                                                )}
+
+                                                <Link
+                                                    to={`/tiket/${b.booking_code}`}
+                                                    id={`btn-ticket-${b.booking_code}`}
+                                                    className="px-4 py-2 bg-[#0E2A47] hover:bg-[#F26A21] text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-sm"
+                                                >
+                                                    <span>Boarding Pass</span>
+                                                    <ArrowRight className="w-3.5 h-3.5" />
+                                                </Link>
+                                            </div>
                                         ) : b.status === 'pending_payment' ? (
                                             <Link
                                                 to={`/bayar/${b.booking_code}`}
@@ -225,6 +279,77 @@ export default function MyBookingsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Check-in Modal */}
+            <Modal
+                isOpen={checkInModalOpen}
+                onClose={() => setCheckInModalOpen(false)}
+                title="Konfirmasi Check-in Online Penerbangan"
+            >
+                {selectedBookingForCheckIn && (
+                    <div className="space-y-5">
+                        <div className="p-4 bg-[#F6F8FA] rounded-xl border border-[#CBD5E1] space-y-2 text-xs">
+                            <div className="flex justify-between">
+                                <span className="text-[#5B6B7B]">Kode Booking:</span>
+                                <span className="font-mono font-bold text-[#0E2A47]">{selectedBookingForCheckIn.booking_code}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-[#5B6B7B]">Penerbangan:</span>
+                                <span className="font-mono font-bold text-[#0E2A47]">
+                                    {selectedBookingForCheckIn.flight?.airline?.name} ({selectedBookingForCheckIn.flight?.flight_number})
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-[#5B6B7B]">Rute:</span>
+                                <span className="font-bold text-[#0E2A47]">
+                                    {selectedBookingForCheckIn.flight?.origin_airport?.city} → {selectedBookingForCheckIn.flight?.destination_airport?.city}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Dangerous Goods Declaration */}
+                        <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-2">
+                            <div className="flex items-center gap-2 font-bold text-amber-950">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>Deklarasi Keselamatan Penerbangan</span>
+                            </div>
+                            <p className="text-[11px] leading-relaxed">
+                                Sesuai regulasi Ditjen Perhubungan Udara, penumpang dilarang membawa barang berbahaya (bahan peledak, gas mudah terbakar, cairan korosif, atau powerbank lebih dari 100Wh) ke dalam kabin dan bagasi.
+                            </p>
+                            <label className="flex items-start gap-2 pt-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={agreeDg}
+                                    onChange={(e) => setAgreeDg(e.target.checked)}
+                                    className="mt-0.5 rounded border-amber-300 text-[#F26A21] focus:ring-[#F26A21]"
+                                />
+                                <span className="text-[11px] font-semibold text-amber-950">
+                                    Saya menyatakan data penumpang benar dan tidak membawa barang berbahaya yang dilarang.
+                                </span>
+                            </label>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <Button
+                                variant="secondary"
+                                size="md"
+                                onClick={() => setCheckInModalOpen(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="primary"
+                                size="md"
+                                disabled={!agreeDg || checkInSubmitting}
+                                loading={checkInSubmitting}
+                                onClick={handlePerformCheckIn}
+                            >
+                                Konfirmasi & Terbitkan Boarding Pass
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }

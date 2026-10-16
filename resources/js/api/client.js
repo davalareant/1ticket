@@ -46,12 +46,20 @@ export const api = {
         return apiRequest(`/flights/search?${query}`);
     },
     getFlightSeats: (id, cabin = 'economy') => apiRequest(`/flights/${id}/seats?cabin=${cabin}`),
+    getSeatMap: (id, cabin = 'economy') => apiRequest(`/flights/${id}/seats?cabin=${cabin}`),
 
     // Bookings
     createBooking: (payload) => apiRequest('/bookings', { method: 'POST', body: payload }),
     getBookings: () => apiRequest('/bookings'),
     getBooking: (code) => apiRequest(`/bookings/${code}`),
     cancelBooking: (code) => apiRequest(`/bookings/${code}/cancel`, { method: 'POST' }),
+    checkInBooking: (code) => apiRequest(`/bookings/${code}/check-in`, { method: 'POST' }),
+
+    // Vouchers
+    validateVoucher: (code, subtotal) => apiRequest('/vouchers/validate', {
+        method: 'POST',
+        body: { code, subtotal },
+    }),
 
     // Payments
     getPaymentMethods: () => apiRequest('/payment-methods'),

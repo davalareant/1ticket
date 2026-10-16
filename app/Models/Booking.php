@@ -22,13 +22,22 @@ class Booking extends Model
         'contact_email',
         'contact_phone',
         'status',
+        'voucher_code',
+        'discount_amount',
+        'addons_total',
+        'addons_data',
         'expires_at',
         'paid_at',
+        'check_in_at',
+        'boarding_pass_issued',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'paid_at' => 'datetime',
+        'check_in_at' => 'datetime',
+        'addons_data' => 'array',
+        'boarding_pass_issued' => 'boolean',
     ];
 
     public function user()

@@ -3,12 +3,27 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import Stepper from '../components/Stepper';
-import { Plane, Calendar, Clock, User, Mail, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle, CreditCard } from 'lucide-react';
+import FlightAddonsSection from '../components/FlightAddonsSection';
+import { Plane, Calendar, Clock, User, Mail, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle, CreditCard, Tag, Check, Sparkles } from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
 export default function SummaryPage() {
-    const { selectedFlight, passengers, contact, setCurrentBooking } = useBooking();
+    const {
+        selectedFlight,
+        passengers,
+        contact,
+        setCurrentBooking,
+        appliedVoucher,
+        setAppliedVoucher,
+        addons,
+        setAddons,
+    } = useBooking();
     const navigate = useNavigate();
+
+    const [voucherInput, setVoucherInput] = useState('');
+    const [voucherLoading, setVoucherLoading] = useState(false);
+    const [voucherError, setVoucherError] = useState('');
+    const [voucherSuccess, setVoucherSuccess] = useState('');
 
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -19,8 +34,51 @@ export default function SummaryPage() {
 
     const passengerCount = passengers.length;
     const unitPrice = selectedFlight.price || 0;
-    const adminFee = 50000;
-    const totalAmount = unitPrice * passengerCount + adminFee;
+    const baseTicketTotal = unitPrice * passengerCount;
+    const adminFee = 5000;
+
+    // Calculate addons total
+    let baggageCost = 0;
+    if (addons.baggage_kg === 10) baggageCost = 120000;
+    else if (addons.baggage_kg === 20) baggageCost = 230000;
+    else if (addons.baggage_kg === 30) baggageCost = 340000;
+
+    const mealsCost = (addons.meals || []).reduce((acc, m) => acc + (m.price || 0), 0);
+    const insuranceCost = addons.insurance ? (35000 * passengerCount) : 0;
+    const addonsTotal = baggageCost + mealsCost + insuranceCost;
+
+    const discountAmount = appliedVoucher ? appliedVoucher.discount_amount : 0;
+    const totalAmount = Math.max(0, baseTicketTotal + adminFee + addonsTotal - discountAmount);
+
+    const handleApplyVoucher = async (e) => {
+        if (e) e.preventDefault();
+        setVoucherError('');
+        setVoucherSuccess('');
+
+        if (!voucherInput.trim()) {
+            setVoucherError('Masukkan kode voucher.');
+            return;
+        }
+
+        setVoucherLoading(true);
+        try {
+            const res = await api.validateVoucher(voucherInput.trim(), baseTicketTotal);
+            setAppliedVoucher(res.voucher);
+            setVoucherSuccess(res.message);
+        } catch (err) {
+            setAppliedVoucher(null);
+            setVoucherError(err.message || 'Kode voucher tidak valid.');
+        } finally {
+            setVoucherLoading(false);
+        }
+    };
+
+    const handleRemoveVoucher = () => {
+        setAppliedVoucher(null);
+        setVoucherInput('');
+        setVoucherSuccess('');
+        setVoucherError('');
+    };
 
     const handleCreateBooking = async () => {
         setSubmitting(true);
@@ -28,12 +86,18 @@ export default function SummaryPage() {
 
         const payload = {
             flight_id: selectedFlight.id,
-            cabin: selectedFlight.cabin || 'economy',
+            cabin_class: selectedFlight.cabin || 'economy',
             contact_name: contact.name,
             contact_email: contact.email,
             contact_phone: contact.phone,
+            voucher_code: appliedVoucher?.code || null,
+            addons: {
+                baggage_kg: addons.baggage_kg,
+                meals: addons.meals,
+                insurance: addons.insurance,
+            },
             passengers: passengers.map((p) => ({
-                title: p.title || 'Tn.',
+                title: p.title || 'Tn',
                 full_name: p.full_name,
                 id_number: p.id_number,
                 seat_number: p.seat_number || null,
@@ -79,7 +143,7 @@ export default function SummaryPage() {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Left Column: Flight Details, Passengers, Contact */}
+                    {/* Left Column: Flight Details, Add-ons, Passengers, Contact */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* Flight Details Card */}
                         <div className="bg-white rounded-[20px] p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-xs space-y-5">
@@ -144,6 +208,13 @@ export default function SummaryPage() {
                             </div>
                         </div>
 
+                        {/* P1: Flight Add-ons Section */}
+                        <FlightAddonsSection
+                            addons={addons}
+                            setAddons={setAddons}
+                            passengerCount={passengerCount}
+                        />
+
                         {/* Passengers List Card */}
                         <div className="bg-white rounded-[20px] p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-xs space-y-4">
                             <h4 className="text-sm font-bold text-[#0E2A47] pb-3 border-b border-[#E2E8F0] flex items-center gap-2">
@@ -205,8 +276,69 @@ export default function SummaryPage() {
                         </div>
                     </div>
 
-                    {/* Right Column: Sticky Price Breakdown Card */}
+                    {/* Right Column: Sticky Price Breakdown & Voucher Card */}
                     <div className="lg:col-span-4 sticky top-24 space-y-6">
+                        {/* P0: Voucher & Promo Code Input Card */}
+                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
+                            <div className="flex items-center gap-2 pb-2 border-b border-[#E2E8F0]">
+                                <Tag className="w-4 h-4 text-[#F26A21]" />
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#0E2A47]">
+                                    Kode Promo & Voucher
+                                </h4>
+                            </div>
+
+                            {appliedVoucher ? (
+                                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Sparkles className="w-4 h-4 text-emerald-600" />
+                                            <span className="font-mono font-bold text-xs text-emerald-900">
+                                                {appliedVoucher.code}
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-emerald-700 mt-0.5 font-medium">
+                                            Hemat {formatRupiah(appliedVoucher.discount_amount)}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveVoucher}
+                                        className="text-xs text-red-500 hover:text-red-700 font-bold hover:underline cursor-pointer"
+                                    >
+                                        Hapus
+                                    </button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleApplyVoucher} className="space-y-2">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            id="input-voucher-code"
+                                            placeholder="Contoh: TERBANGHEMAT"
+                                            value={voucherInput}
+                                            onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                                            className="w-full px-3.5 py-2 text-xs font-mono font-bold bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl focus:ring-2 focus:ring-[#F26A21] focus:outline-none uppercase"
+                                        />
+                                        <button
+                                            type="submit"
+                                            id="btn-apply-voucher"
+                                            disabled={voucherLoading}
+                                            className="px-4 py-2 bg-[#0E2A47] hover:bg-[#F26A21] disabled:bg-gray-400 text-white text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                                        >
+                                            {voucherLoading ? 'Cek...' : 'Pakai'}
+                                        </button>
+                                    </div>
+                                    {voucherError && (
+                                        <p className="text-[11px] text-red-500 font-medium">{voucherError}</p>
+                                    )}
+                                    <p className="text-[10px] text-[#5B6B7B]">
+                                        Gunakan voucher <strong>TERBANGHEMAT</strong> (10%) atau <strong>LIBURANSERU</strong> (Rp100.000).
+                                    </p>
+                                </form>
+                            )}
+                        </div>
+
+                        {/* Price Breakdown Card */}
                         <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-5">
                             <h4 className="text-sm font-bold text-[#0E2A47] pb-3 border-b border-[#E2E8F0]">
                                 Rincian Pembayaran
@@ -216,16 +348,34 @@ export default function SummaryPage() {
                                 <div className="flex justify-between text-[#5B6B7B]">
                                     <span>Tiket ({passengerCount} Penumpang)</span>
                                     <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
-                                        {formatRupiah(unitPrice * passengerCount)}
+                                        {formatRupiah(baseTicketTotal)}
                                     </span>
                                 </div>
 
                                 <div className="flex justify-between text-[#5B6B7B]">
-                                    <span>Biaya Layanan & Pajak Bandara</span>
+                                    <span>Biaya Layanan & Pajak</span>
                                     <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
                                         {formatRupiah(adminFee)}
                                     </span>
                                 </div>
+
+                                {addonsTotal > 0 && (
+                                    <div className="flex justify-between text-[#5B6B7B]">
+                                        <span>Fasilitas Tambahan (Add-ons)</span>
+                                        <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
+                                            +{formatRupiah(addonsTotal)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {discountAmount > 0 && (
+                                    <div className="flex justify-between text-emerald-600 font-semibold">
+                                        <span>Potongan Promo ({appliedVoucher?.code})</span>
+                                        <span className="font-mono tabular-nums">
+                                            -{formatRupiah(discountAmount)}
+                                        </span>
+                                    </div>
+                                )}
 
                                 <div className="pt-3 border-t border-[#E2E8F0] flex justify-between items-center text-base">
                                     <span className="font-bold text-[#0E2A47]">Total Bayar</span>

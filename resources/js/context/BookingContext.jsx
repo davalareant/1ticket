@@ -56,6 +56,13 @@ export function BookingProvider({ children }) {
         return null;
     });
 
+    const [appliedVoucher, setAppliedVoucher] = useState(null);
+    const [addons, setAddons] = useState({
+        baggage_kg: 0,
+        meals: [],
+        insurance: false,
+    });
+
     // Sync to sessionStorage
     useEffect(() => {
         sessionStorage.setItem('1tiket_search', JSON.stringify(searchCriteria));
@@ -118,6 +125,10 @@ export function BookingProvider({ children }) {
                 setContact,
                 currentBooking,
                 setCurrentBooking,
+                appliedVoucher,
+                setAppliedVoucher,
+                addons,
+                setAddons,
                 resetBookingFlow,
             }}
         >

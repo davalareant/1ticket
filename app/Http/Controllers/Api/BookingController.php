@@ -33,7 +33,7 @@ class BookingController extends Controller
         $passengerCount = count($validated['passengers']);
         $cabinClass = $validated['cabin_class'];
 
-        $booking = DB::transaction(function () use ($validated, $user, $passengerCount, $cabinClass) {
+        $booking = DB::transaction(function () use ($request, $validated, $user, $passengerCount, $cabinClass) {
             // Lock flight row to prevent race conditions on seats
             $flight = Flight::where('id', $validated['flight_id'])->lockForUpdate()->firstOrFail();
 
@@ -76,7 +76,55 @@ class BookingController extends Controller
 
             $unitPrice = $fare->price;
             $adminFee = 5000;
-            $totalAmount = ($unitPrice * $passengerCount) + $adminFee;
+            $subtotal = ($unitPrice * $passengerCount);
+
+            // Calculate voucher discount
+            $discountAmount = 0;
+            $voucherCode = null;
+            if (!empty($request->voucher_code)) {
+                $code = strtoupper(trim($request->voucher_code));
+                $voucher = DB::table('vouchers')
+                    ->where('code', $code)
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($voucher && $subtotal >= $voucher->min_spend) {
+                    $voucherCode = $voucher->code;
+                    if ($voucher->discount_type === 'percent') {
+                        $discount = (int) floor(($subtotal * $voucher->discount_value) / 100);
+                        $discountAmount = $voucher->max_discount ? min($discount, $voucher->max_discount) : $discount;
+                    } else {
+                        $discountAmount = min($voucher->discount_value, $subtotal);
+                    }
+                    // Increment used count
+                    DB::table('vouchers')->where('id', $voucher->id)->increment('used_count');
+                }
+            }
+
+            // Calculate addons total
+            $addonsTotal = 0;
+            $addonsData = $request->input('addons', []);
+            if (!empty($addonsData)) {
+                // Baggage
+                if (!empty($addonsData['baggage_kg'])) {
+                    $kg = (int) $addonsData['baggage_kg'];
+                    if ($kg === 10) $addonsTotal += 120000;
+                    elseif ($kg === 20) $addonsTotal += 230000;
+                    elseif ($kg === 30) $addonsTotal += 340000;
+                }
+                // Meals
+                if (!empty($addonsData['meals']) && is_array($addonsData['meals'])) {
+                    foreach ($addonsData['meals'] as $meal) {
+                        $addonsTotal += (int) ($meal['price'] ?? 0);
+                    }
+                }
+                // Insurance
+                if (!empty($addonsData['insurance'])) {
+                    $addonsTotal += (35000 * $passengerCount);
+                }
+            }
+
+            $totalAmount = max(0, $subtotal + $adminFee + $addonsTotal - $discountAmount);
             $expiresAt = now()->addMinutes(15);
 
             $booking = Booking::create([
@@ -88,6 +136,10 @@ class BookingController extends Controller
                 'unit_price' => $unitPrice,
                 'admin_fee' => $adminFee,
                 'total_amount' => $totalAmount,
+                'voucher_code' => $voucherCode,
+                'discount_amount' => $discountAmount,
+                'addons_total' => $addonsTotal,
+                'addons_data' => $addonsData,
                 'contact_name' => $validated['contact_name'],
                 'contact_email' => $validated['contact_email'],
                 'contact_phone' => $validated['contact_phone'],
@@ -120,6 +172,58 @@ class BookingController extends Controller
             'message' => 'Pesanan berhasil dibuat. Kursi Anda ditahan selama 15 menit.',
             'booking' => $booking,
         ], 201);
+    }
+
+    public function checkIn(Request $request, $code)
+    {
+        $booking = Booking::where('booking_code', $code)
+            ->where('user_id', $request->user()->id)
+            ->with(['flight', 'passengers'])
+            ->firstOrFail();
+
+        if ($booking->status !== 'paid') {
+            return response()->json([
+                'message' => 'Hanya pesanan yang sudah lunas yang dapat melakukan check-in online.',
+            ], 422);
+        }
+
+        // Auto assign seat if any passenger has null seat
+        $takenSeats = $booking->flight->getTakenSeatNumbers($booking->cabin_class);
+        $rows = $booking->cabin_class === 'business' ? range(1, 4) : range(5, 20);
+        $cols = $booking->cabin_class === 'business' ? ['A', 'C', 'D', 'F'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+
+        foreach ($booking->passengers as $passenger) {
+            if (empty($passenger->seat_number)) {
+                foreach ($rows as $r) {
+                    foreach ($cols as $c) {
+                        $candidate = "{$r}{$c}";
+                        if (!in_array($candidate, $takenSeats)) {
+                            $passenger->seat_number = $candidate;
+                            $passenger->save();
+                            $takenSeats[] = $candidate;
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        $booking->check_in_at = now();
+        $booking->boarding_pass_issued = true;
+        $booking->save();
+
+        $booking->load([
+            'flight.airline',
+            'flight.originAirport',
+            'flight.destinationAirport',
+            'passengers',
+            'payments.paymentMethod',
+        ]);
+
+        return response()->json([
+            'message' => 'Check-in online berhasil! Boarding pass resmi telah diterbitkan.',
+            'booking' => $booking,
+        ]);
     }
 
     public function index(Request $request)
