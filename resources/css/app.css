@@ -116,27 +116,29 @@
     background-repeat: repeat-y;
 }
 
-/* QR Scanner Line Animation (N13) */
+/* QR Scanner Line Animation (N13) - GPU accelerated with transform3d */
 @keyframes qrScan {
     0% {
-        top: 0%;
+        transform: translate3d(0, 0, 0);
         opacity: 0.8;
     }
     50% {
-        top: 90%;
+        transform: translate3d(0, 170px, 0);
         opacity: 1;
     }
     100% {
-        top: 0%;
+        transform: translate3d(0, 0, 0);
         opacity: 0.8;
     }
 }
 
 .animate-qr-scan {
-    animation: qrScan 2.5s ease-in-out infinite;
+    top: 0;
+    will-change: transform;
+    animation: qrScan 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-/* Clouds floating smoothly without CPU layout shift */
+/* Clouds floating smoothly with GPU transform3d */
 @keyframes floatCloud {
     0% {
         transform: translate3d(-3%, 0, 0);
@@ -157,6 +159,16 @@
 .animate-cloud-medium {
     will-change: transform;
     animation: floatCloud 16s ease-in-out infinite reverse;
+}
+
+/* Reduced Motion Support for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* Reduced Motion Override */
