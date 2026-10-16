@@ -6,6 +6,7 @@ import FlightCard from '../components/FlightCard';
 import AirplaneLoader from '../components/AirplaneLoader';
 import FlightSearchForm from '../components/FlightSearchForm';
 import { Filter, ArrowUpDown, Calendar, AlertCircle, ChevronDown, RefreshCw } from 'lucide-react';
+import { formatRupiah } from '../utils/formatters';
 
 export default function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -96,7 +97,7 @@ export default function SearchPage() {
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
             {/* Search Summary Header */}
             <div className="bg-[#0E2A47] text-white py-6 border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="font-mono text-2xl font-black text-white">
@@ -126,7 +127,7 @@ export default function SearchPage() {
 
             {/* Collapsible Edit Form */}
             {showEditSearch && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-6">
                     <FlightSearchForm
                         initialValues={{ origin, destination, date, passengers, cabin }}
                         showMap={false}
@@ -147,7 +148,7 @@ export default function SearchPage() {
             {/* Date Strip ±3 days with Lowest Price (S5) */}
             {searchResult?.date_strip && (
                 <div className="bg-white border-b border-[#CBD5E1]/60 py-3 shadow-xs sticky top-18 z-30">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
                         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
                             {searchResult.date_strip.map((strip) => {
                                 const isCurrent = strip.is_selected;
@@ -164,11 +165,11 @@ export default function SearchPage() {
                                         <span className={`text-[11px] block ${isCurrent ? 'text-[#CFE5F5]' : 'text-[#5B6B7B]'}`}>
                                             {strip.day_name}, {strip.formatted}
                                         </span>
-                                        <span className={`font-mono text-xs font-bold block mt-0.5 ${
+                                        <span className={`font-mono text-xs font-bold block mt-0.5 tabular-nums ${
                                             isCurrent ? 'text-[#F26A21]' : strip.min_price ? 'text-[#0E2A47]' : 'text-[#94A3B8]'
                                         }`}>
                                             {strip.min_price
-                                                ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(strip.min_price)
+                                                ? formatRupiah(strip.min_price)
                                                 : 'Habis'}
                                         </span>
                                     </button>
@@ -179,7 +180,7 @@ export default function SearchPage() {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8">
                 {/* Filter & Sorting Controls Bar (R2 & R3) */}
                 <div className="bg-white rounded-2xl border border-[#CBD5E1]/70 p-4 mb-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
                     {/* Time Slot Filter Buttons (R3) */}

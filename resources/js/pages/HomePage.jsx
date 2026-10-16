@@ -33,22 +33,22 @@ export default function HomePage() {
             <FlightTakeoffHero />
 
             {/* Flight Search Form (S1-S4, N4, N5) */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 w-full">
                 <FlightSearchForm />
             </div>
 
             {/* Popular Routes Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-20 sm:py-24 w-full">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
                     <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#F26A21]">
+                        <span className="text-xs font-bold uppercase tracking-widest text-[#F26A21]">
                             Inspirasi Liburan
                         </span>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0E2A47] mt-1">
+                        <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0E2A47] mt-1 tracking-tight">
                             Rute Penerbangan Terpopuler
                         </h2>
                     </div>
-                    <p className="text-sm text-[#5B6B7B] max-w-sm">
+                    <p className="text-sm text-[#5B6B7B] max-w-sm leading-relaxed">
                         Jadwal terpadat dengan tarif terbaik untuk penerbangan satu arah favorit Anda.
                     </p>
                 </div>
@@ -106,13 +106,13 @@ export default function HomePage() {
             </section>
 
             {/* Why 1Tiket Feature Showcase */}
-            <section className="bg-white border-y border-[#CBD5E1]/60 py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-2xl mx-auto mb-12">
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#F26A21]">
+            <section className="bg-white border-y border-[#CBD5E1]/60 py-20 sm:py-24">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+                    <div className="text-center max-w-2xl mx-auto mb-16">
+                        <span className="text-xs font-bold uppercase tracking-widest text-[#F26A21]">
                             Pengalaman Berbeda
                         </span>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0E2A47] mt-1">
+                        <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0E2A47] mt-1 tracking-tight">
                             Dirancang Khusus untuk Kemudahan Anda
                         </h2>
                     </div>

@@ -4,17 +4,79 @@
 @source '../js/**/*.{js,jsx,ts,tsx}';
 
 @theme {
+    /* Fonts: Outfit (Display) & Plus Jakarta Sans (Body) & JetBrains Mono (Codes) */
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    --color-tinta: #0E2A47;
-    --color-langit: #CFE5F5;
-    --color-kertas: #F6F8FA;
-    --color-sinyal: #F26A21;
-    --color-landasan: #5B6B7B;
+    /* Core Travel Brand Palette */
+    --color-brand: #F26A21;
+    --color-brand-hover: #DC5511;
+    --color-brand-light: #FDEEE6;
+
+    --color-ink: #0E2A47;
+    --color-ink-light: #1A3E66;
+
+    --color-sky: #CFE5F5;
+    --color-sky-light: #EBF4FB;
+
+    --color-surface: #F6F8FA;
+    --color-surface-card: #FFFFFF;
+
+    --color-runway: #5B6B7B;
+    --color-runway-light: #8E9BA8;
+
+    /* Neutral Scale 50 to 900 */
+    --color-neutral-50: #F8FAFC;
+    --color-neutral-100: #F1F5F9;
+    --color-neutral-200: #E2E8F0;
+    --color-neutral-300: #CBD5E1;
+    --color-neutral-400: #94A3B8;
+    --color-neutral-500: #64748B;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1E293B;
+    --color-neutral-900: #0F172A;
+
+    /* Semantics */
+    --color-success: #059669;
+    --color-success-bg: #ECFDF5;
+    --color-warning: #D97706;
+    --color-warning-bg: #FFFBEB;
+    --color-danger: #DC2626;
+    --color-danger-bg: #FEF2F2;
+    --color-info: #0284C7;
+    --color-info-bg: #F0F9FF;
+
+    /* Radius (Strict: 8px small, 12px medium, 20px large) */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-pill: 9999px;
+
+    /* Shadows: Soft & Layered */
+    --shadow-subtle: 0 1px 3px 0 rgba(14, 42, 71, 0.04), 0 1px 2px -1px rgba(14, 42, 71, 0.04);
+    --shadow-card: 0 4px 16px -2px rgba(14, 42, 71, 0.06), 0 2px 6px -1px rgba(14, 42, 71, 0.03);
+    --shadow-elevated: 0 12px 32px -4px rgba(14, 42, 71, 0.10), 0 4px 12px -2px rgba(14, 42, 71, 0.05);
 }
 
-/* Custom Boarding Pass & Aviation Styling */
+/* Tabular Numbers for Prices, Booking Codes, and Flight Times */
+.num-tabular, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+}
+
+/* Focus Ring Utility */
+.focus-ring {
+    outline: none;
+    transition: box-shadow 0.15s ease-in-out;
+}
+.focus-ring:focus-visible {
+    box-shadow: 0 0 0 3px rgba(242, 106, 33, 0.25), 0 0 0 1px #F26A21;
+}
+
+/* Boarding Pass Ticket Notches & Perforation */
 .ticket-notch-left {
     position: relative;
 }
@@ -26,7 +88,7 @@
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    background-color: #F6F8FA;
+    background-color: var(--color-surface);
     border-radius: 50%;
     z-index: 10;
 }
@@ -42,36 +104,16 @@
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    background-color: #F6F8FA;
+    background-color: var(--color-surface);
     border-radius: 50%;
     z-index: 10;
 }
 
 .perforated-line {
-    background-image: linear-gradient(to bottom, #5B6B7B 50%, rgba(255, 255, 255, 0) 0%);
+    background-image: linear-gradient(to bottom, #CBD5E1 50%, rgba(255, 255, 255, 0) 0%);
     background-position: right;
     background-size: 2px 10px;
     background-repeat: repeat-y;
-}
-
-.perforated-line-h {
-    background-image: linear-gradient(to right, #CBD5E1 50%, rgba(255, 255, 255, 0) 0%);
-    background-position: bottom;
-    background-size: 10px 2px;
-    background-repeat: repeat-x;
-}
-
-/* Flight Path SVG Stroke Animation */
-@keyframes dash {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-.animate-flight-path {
-    stroke-dasharray: 8, 6;
-    stroke-dashoffset: 200;
-    animation: dash 3s linear infinite;
 }
 
 /* QR Scanner Line Animation (N13) */
@@ -94,33 +136,35 @@
     animation: qrScan 2.5s ease-in-out infinite;
 }
 
-/* Cloud Floating Animation (N2) */
+/* Clouds floating smoothly without CPU layout shift */
 @keyframes floatCloud {
     0% {
-        transform: translateX(-5%);
+        transform: translate3d(-3%, 0, 0);
     }
     50% {
-        transform: translateX(5%);
+        transform: translate3d(3%, 0, 0);
     }
     100% {
-        transform: translateX(-5%);
+        transform: translate3d(-3%, 0, 0);
     }
 }
 
 .animate-cloud-slow {
+    will-change: transform;
     animation: floatCloud 24s ease-in-out infinite;
 }
 
 .animate-cloud-medium {
+    will-change: transform;
     animation: floatCloud 16s ease-in-out infinite reverse;
 }
 
-/* Respect Reduced Motion */
+/* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
     *, ::before, ::after {
-        animation-duration: 0.01ms !important;
+        animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
 }

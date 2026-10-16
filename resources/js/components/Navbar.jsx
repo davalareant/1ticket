@@ -29,7 +29,7 @@ export default function Navbar() {
 
     return (
         <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-18 flex items-center justify-between">
                 {/* Logo & Brand Wordmark */}
                 <Link to="/" className="flex items-center gap-2.5 group">
                     <div className="relative flex items-center justify-center w-10 h-10 bg-[#0E2A47] text-white rounded-xl shadow-md group-hover:bg-[#F26A21] transition-colors duration-300">
@@ -39,10 +39,10 @@ export default function Navbar() {
                         <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-2xl font-extrabold tracking-tight text-[#0E2A47] leading-none">
+                        <span className="font-display text-2xl font-black tracking-tight text-[#0E2A47] leading-none">
                             1<span className="text-[#F26A21]">Tiket</span>
                         </span>
-                        <span className="text-[10px] uppercase tracking-widest text-[#5B6B7B] font-medium mt-0.5">
+                        <span className="text-[10px] uppercase tracking-widest text-[#5B6B7B] font-semibold mt-0.5">
                             Penerbangan Domestik
                         </span>
                     </div>
