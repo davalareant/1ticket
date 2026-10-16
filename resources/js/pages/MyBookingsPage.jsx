@@ -16,7 +16,7 @@ import { formatRupiah, formatDate } from '../utils/formatters';
 
 export default function MyBookingsPage() {
     const { isAuthenticated, loading: authLoading } = useAuth();
-    const { addToast } = useToast();
+    const { showToast } = useToast();
 
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -67,11 +67,11 @@ export default function MyBookingsPage() {
         setCheckInSubmitting(true);
         try {
             await api.checkInBooking(selectedBookingForCheckIn.booking_code);
-            addToast('Check-in online berhasil! Boarding pass digital telah diterbitkan.', 'success');
+            showToast('Check-in online berhasil! Boarding pass digital telah diterbitkan.', 'success');
             setCheckInModalOpen(false);
             await loadBookings();
         } catch (err) {
-            addToast(err.message || 'Gagal melakukan check-in online.', 'error');
+            showToast(err.message || 'Gagal melakukan check-in online.', 'error');
         } finally {
             setCheckInSubmitting(false);
         }
@@ -171,6 +171,10 @@ export default function MyBookingsPage() {
                             const flight = b.flight;
                             const origin = flight?.origin_airport || flight?.originAirport;
                             const dest = flight?.destination_airport || flight?.destinationAirport;
+                            const returnFlight = b.return_flight || b.returnFlight;
+                            const retOrigin = returnFlight?.origin_airport || returnFlight?.originAirport;
+                            const retDest = returnFlight?.destination_airport || returnFlight?.destinationAirport;
+                            const isRoundTrip = !!b.return_flight_id;
                             const isCheckedIn = Boolean(b.check_in_at);
 
                             return (
@@ -181,6 +185,11 @@ export default function MyBookingsPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2.5 flex-wrap">
                                             {getStatusBadge(b.status, isCheckedIn)}
+                                            {isRoundTrip && (
+                                                <Badge variant="primary" size="sm">
+                                                    Pulang Pergi
+                                                </Badge>
+                                            )}
                                             <span className="font-mono text-xs font-bold text-[#5B6B7B]">
                                                 Kode: {b.booking_code}
                                             </span>
@@ -194,28 +203,59 @@ export default function MyBookingsPage() {
                                             )}
                                         </div>
 
-                                        <div className="flex items-center gap-4">
-                                            <div>
-                                                <span className="font-mono text-2xl font-black text-[#0E2A47]">
-                                                    {origin?.iata_code}
-                                                </span>
-                                                <p className="text-xs text-[#5B6B7B] font-semibold">{origin?.city}</p>
+                                        {/* Routes (Outbound + Optional Return) */}
+                                        <div className="space-y-2">
+                                            {/* Outbound */}
+                                            <div className="flex items-center gap-4">
+                                                <div>
+                                                    <span className="font-mono text-xl sm:text-2xl font-black text-[#0E2A47]">
+                                                        {origin?.iata_code}
+                                                    </span>
+                                                    <p className="text-xs text-[#5B6B7B] font-semibold">{origin?.city}</p>
+                                                </div>
+
+                                                <div className="flex flex-col items-center px-2">
+                                                    <span className="text-[10px] text-[#5B6B7B] font-semibold">Pergi</span>
+                                                    <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1] my-0.5" />
+                                                    <span className="text-[10px] text-[#5B6B7B] font-mono">
+                                                        {flight?.flight_number}
+                                                    </span>
+                                                </div>
+
+                                                <div>
+                                                    <span className="font-mono text-xl sm:text-2xl font-black text-[#0E2A47]">
+                                                        {dest?.iata_code}
+                                                    </span>
+                                                    <p className="text-xs text-[#5B6B7B] font-semibold">{dest?.city}</p>
+                                                </div>
                                             </div>
 
-                                            <div className="flex flex-col items-center px-2">
-                                                <Plane className="w-4 h-4 text-[#F26A21] rotate-90" />
-                                                <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1] my-1" />
-                                                <span className="text-[10px] text-[#5B6B7B] font-mono">
-                                                    {flight?.flight_number}
-                                                </span>
-                                            </div>
+                                            {/* Return route if round trip */}
+                                            {isRoundTrip && returnFlight && (
+                                                <div className="flex items-center gap-4 pt-2 border-t border-[#E2E8F0]/70">
+                                                    <div>
+                                                        <span className="font-mono text-xl sm:text-2xl font-black text-[#F26A21]">
+                                                            {retOrigin?.iata_code}
+                                                        </span>
+                                                        <p className="text-xs text-[#5B6B7B] font-semibold">{retOrigin?.city}</p>
+                                                    </div>
 
-                                            <div>
-                                                <span className="font-mono text-2xl font-black text-[#0E2A47]">
-                                                    {dest?.iata_code}
-                                                </span>
-                                                <p className="text-xs text-[#5B6B7B] font-semibold">{dest?.city}</p>
-                                            </div>
+                                                    <div className="flex flex-col items-center px-2">
+                                                        <span className="text-[10px] text-[#F26A21] font-bold">Pulang</span>
+                                                        <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1] my-0.5" />
+                                                        <span className="text-[10px] text-[#5B6B7B] font-mono">
+                                                            {returnFlight?.flight_number}
+                                                        </span>
+                                                    </div>
+
+                                                    <div>
+                                                        <span className="font-mono text-xl sm:text-2xl font-black text-[#F26A21]">
+                                                            {retDest?.iata_code}
+                                                        </span>
+                                                        <p className="text-xs text-[#5B6B7B] font-semibold">{retDest?.city}</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="text-xs text-[#5B6B7B] flex items-center gap-2 flex-wrap">

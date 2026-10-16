@@ -4,12 +4,28 @@ import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import Stepper from '../components/Stepper';
 import FlightAddonsSection from '../components/FlightAddonsSection';
-import { Plane, Calendar, Clock, User, Mail, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle, CreditCard, Tag, Check, Sparkles } from 'lucide-react';
+import {
+    Plane,
+    Calendar,
+    Clock,
+    User,
+    Mail,
+    ShieldCheck,
+    ArrowRight,
+    ArrowLeft,
+    AlertCircle,
+    CreditCard,
+    Tag,
+    Check,
+    Sparkles,
+    Repeat
+} from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
 export default function SummaryPage() {
     const {
         selectedFlight,
+        returnFlight,
         passengers,
         contact,
         setCurrentBooking,
@@ -32,9 +48,12 @@ export default function SummaryPage() {
         return <Navigate to="/cari" replace />;
     }
 
+    const isRoundTrip = !!returnFlight;
     const passengerCount = passengers.length;
     const unitPrice = selectedFlight.price || 0;
-    const baseTicketTotal = unitPrice * passengerCount;
+    const outboundTicketTotal = unitPrice * passengerCount;
+    const returnTicketTotal = isRoundTrip ? (returnFlight.price || 0) * passengerCount : 0;
+    const baseTicketTotal = outboundTicketTotal + returnTicketTotal;
     const adminFee = 5000;
 
     // Calculate addons total
@@ -87,6 +106,9 @@ export default function SummaryPage() {
         const payload = {
             flight_id: selectedFlight.id,
             cabin_class: selectedFlight.cabin || 'economy',
+            trip_type: isRoundTrip ? 'round_trip' : 'one_way',
+            return_flight_id: returnFlight ? returnFlight.id : null,
+            return_cabin_class: returnFlight ? (returnFlight.cabin || selectedFlight.cabin) : null,
             contact_name: contact.name,
             contact_email: contact.email,
             contact_phone: contact.phone,
@@ -101,6 +123,7 @@ export default function SummaryPage() {
                 full_name: p.full_name,
                 id_number: p.id_number,
                 seat_number: p.seat_number || null,
+                return_seat_number: p.return_seat_number || null,
             })),
         };
 
@@ -143,268 +166,349 @@ export default function SummaryPage() {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Left Column: Flight Details, Add-ons, Passengers, Contact */}
+                    {/* Left Column: Flight Details, Passengers, Contact & Addons */}
                     <div className="lg:col-span-8 space-y-6">
-                        {/* Flight Details Card */}
-                        <div className="bg-white rounded-[20px] p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-xs space-y-5">
-                            <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
-                                <div className="flex items-center gap-3">
+                        {/* 1. Flight Outbound Details */}
+                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
+                            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+                                <div className="flex items-center gap-2.5">
                                     <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-white shadow-xs"
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs"
                                         style={{ backgroundColor: selectedFlight.airline?.brand_color || '#0E2A47' }}
                                     >
                                         {selectedFlight.airline?.code}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-base text-[#0E2A47]">
-                                            {selectedFlight.airline?.name}
-                                        </h3>
-                                        <p className="font-mono text-xs font-semibold text-[#5B6B7B]">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-[#F26A21] uppercase">
+                                                {isRoundTrip ? 'Penerbangan Pergi' : 'Penerbangan'}
+                                            </span>
+                                            <span className="text-gray-300">•</span>
+                                            <h3 className="font-bold text-sm text-[#0E2A47]">
+                                                {selectedFlight.airline?.name}
+                                            </h3>
+                                        </div>
+                                        <p className="font-mono text-xs text-[#5B6B7B]">
                                             {selectedFlight.flight_number} • Kelas {selectedFlight.cabin === 'business' ? 'Bisnis' : 'Ekonomi'}
                                         </p>
                                     </div>
                                 </div>
-
                                 <span className="font-mono text-xs font-bold px-3 py-1 bg-[#CFE5F5]/60 text-[#0E2A47] rounded-lg">
-                                    {selectedFlight.flight_date}
+                                    Langsung
                                 </span>
                             </div>
 
-                            {/* Route timeline */}
-                            <div className="grid grid-cols-1 sm:grid-cols-7 items-center gap-4 py-2">
-                                <div className="sm:col-span-3 text-left">
-                                    <span className="font-mono tabular-nums text-3xl font-black text-[#0E2A47]">
+                            <div className="grid grid-cols-7 items-center gap-2 pt-2">
+                                <div className="col-span-2">
+                                    <span className="font-mono text-2xl font-black text-[#0E2A47]">
                                         {selectedFlight.local_departure_time}
                                     </span>
-                                    <p className="font-mono font-bold text-sm text-[#0E2A47] mt-0.5">
+                                    <p className="font-mono text-xs font-bold text-[#0E2A47] mt-0.5">
                                         {selectedFlight.origin?.iata_code}
                                     </p>
-                                    <p className="text-xs text-[#5B6B7B] font-medium">
-                                        {selectedFlight.origin?.name} ({selectedFlight.origin?.city})
+                                    <p className="text-xs text-[#5B6B7B] truncate">
+                                        {selectedFlight.origin?.city}
                                     </p>
                                 </div>
 
-                                <div className="sm:col-span-1 flex flex-col items-center justify-center">
-                                    <span className="text-[11px] font-semibold text-[#5B6B7B] mb-1 tabular-nums">
+                                <div className="col-span-3 text-center">
+                                    <span className="text-[11px] font-semibold text-[#5B6B7B] block mb-1">
                                         {Math.floor(selectedFlight.duration_minutes / 60)}j {selectedFlight.duration_minutes % 60}m
                                     </span>
-                                    <div className="w-full flex items-center justify-center">
-                                        <div className="w-16 h-0.5 border-b-2 border-dashed border-[#CBD5E1]" />
+                                    <div className="flex items-center justify-center gap-1 text-[#F26A21]">
+                                        <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1]" />
+                                        <Plane className="w-3.5 h-3.5 fill-current" />
+                                        <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1]" />
                                     </div>
-                                    <span className="text-[10px] text-[#5B6B7B] mt-1 font-semibold">Langsung</span>
                                 </div>
 
-                                <div className="sm:col-span-3 text-left sm:text-right">
-                                    <span className="font-mono tabular-nums text-3xl font-black text-[#0E2A47]">
+                                <div className="col-span-2 text-right">
+                                    <span className="font-mono text-2xl font-black text-[#0E2A47]">
                                         {selectedFlight.local_arrival_time}
                                     </span>
-                                    <p className="font-mono font-bold text-sm text-[#0E2A47] mt-0.5">
+                                    <p className="font-mono text-xs font-bold text-[#0E2A47] mt-0.5">
                                         {selectedFlight.destination?.iata_code}
                                     </p>
-                                    <p className="text-xs text-[#5B6B7B] font-medium">
-                                        {selectedFlight.destination?.name} ({selectedFlight.destination?.city})
+                                    <p className="text-xs text-[#5B6B7B] truncate">
+                                        {selectedFlight.destination?.city}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* P1: Flight Add-ons Section */}
-                        <FlightAddonsSection
-                            addons={addons}
-                            setAddons={setAddons}
-                            passengerCount={passengerCount}
-                        />
+                        {/* 2. Flight Return Details (if round trip) */}
+                        {isRoundTrip && (
+                            <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
+                                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+                                    <div className="flex items-center gap-2.5">
+                                        <div
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-white text-xs"
+                                            style={{ backgroundColor: returnFlight.airline?.brand_color || '#0E2A47' }}
+                                        >
+                                            {returnFlight.airline?.code}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-emerald-600 uppercase flex items-center gap-1">
+                                                    <Repeat className="w-3 h-3" />
+                                                    Penerbangan Pulang
+                                                </span>
+                                                <span className="text-gray-300">•</span>
+                                                <h3 className="font-bold text-sm text-[#0E2A47]">
+                                                    {returnFlight.airline?.name}
+                                                </h3>
+                                            </div>
+                                            <p className="font-mono text-xs text-[#5B6B7B]">
+                                                {returnFlight.flight_number} • Kelas {returnFlight.cabin === 'business' ? 'Bisnis' : 'Ekonomi'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="font-mono text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg">
+                                        Langsung
+                                    </span>
+                                </div>
 
-                        {/* Passengers List Card */}
-                        <div className="bg-white rounded-[20px] p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-xs space-y-4">
-                            <h4 className="text-sm font-bold text-[#0E2A47] pb-3 border-b border-[#E2E8F0] flex items-center gap-2">
-                                <User className="w-4 h-4 text-[#F26A21]" />
-                                Daftar Penumpang ({passengers.length} Orang)
-                            </h4>
+                                <div className="grid grid-cols-7 items-center gap-2 pt-2">
+                                    <div className="col-span-2">
+                                        <span className="font-mono text-2xl font-black text-[#0E2A47]">
+                                            {returnFlight.local_departure_time}
+                                        </span>
+                                        <p className="font-mono text-xs font-bold text-[#0E2A47] mt-0.5">
+                                            {returnFlight.origin?.iata_code}
+                                        </p>
+                                        <p className="text-xs text-[#5B6B7B] truncate">
+                                            {returnFlight.origin?.city}
+                                        </p>
+                                    </div>
 
-                            <div className="space-y-3">
+                                    <div className="col-span-3 text-center">
+                                        <span className="text-[11px] font-semibold text-[#5B6B7B] block mb-1">
+                                            {Math.floor(returnFlight.duration_minutes / 60)}j {returnFlight.duration_minutes % 60}m
+                                        </span>
+                                        <div className="flex items-center justify-center gap-1 text-[#F26A21]">
+                                            <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1]" />
+                                            <Plane className="w-3.5 h-3.5 fill-current" />
+                                            <div className="w-12 h-0.5 border-b border-dashed border-[#CBD5E1]" />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-2 text-right">
+                                        <span className="font-mono text-2xl font-black text-[#0E2A47]">
+                                            {returnFlight.local_arrival_time}
+                                        </span>
+                                        <p className="font-mono text-xs font-bold text-[#0E2A47] mt-0.5">
+                                            {returnFlight.destination?.iata_code}
+                                        </p>
+                                        <p className="text-xs text-[#5B6B7B] truncate">
+                                            {returnFlight.destination?.city}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. Passengers & Assigned Seats */}
+                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
+                            <h3 className="font-bold text-sm text-[#0E2A47] pb-3 border-b border-[#E2E8F0] flex items-center justify-between">
+                                <span>Daftar Penumpang & Kursi</span>
+                                <span className="text-xs font-normal text-[#5B6B7B]">
+                                    {passengers.length} Orang
+                                </span>
+                            </h3>
+
+                            <div className="divide-y divide-[#E2E8F0]">
                                 {passengers.map((p, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="p-4 rounded-xl bg-[#F6F8FA] border border-[#CBD5E1]/60 flex items-center justify-between"
-                                    >
+                                    <div key={idx} className="py-3 flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-[#0E2A47] text-white flex items-center justify-center font-bold text-xs">
+                                            <div className="w-7 h-7 rounded-lg bg-[#0E2A47] text-white flex items-center justify-center font-bold text-xs">
                                                 {idx + 1}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-[#0E2A47]">
-                                                    {p.title || 'Tn.'} {p.full_name}
+                                                <p className="font-bold text-[#0E2A47]">
+                                                    {p.title}. {p.full_name}
                                                 </p>
-                                                <p className="font-mono text-xs text-[#5B6B7B] mt-0.5">
-                                                    ID: {p.id_number}
+                                                <p className="text-[#5B6B7B] text-[11px] font-mono">
+                                                    ID / NIK: {p.id_number}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="text-right">
-                                            <span className="text-[10px] text-[#5B6B7B] block font-semibold">Kursi Kabin</span>
-                                            <span className="font-mono font-black text-sm text-[#F26A21]">
-                                                {p.seat_number || 'Otomatis'}
-                                            </span>
+                                        <div className="flex items-center gap-3 text-right">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[10px] text-[#5B6B7B]">Kursi Pergi:</span>
+                                                <span className="font-mono font-bold text-[#0E2A47]">
+                                                    {p.seat_number || 'Otomatis'}
+                                                </span>
+                                            </div>
+                                            {isRoundTrip && (
+                                                <div className="flex flex-col items-end pl-3 border-l border-[#CBD5E1]">
+                                                    <span className="text-[10px] text-[#5B6B7B]">Kursi Pulang:</span>
+                                                    <span className="font-mono font-bold text-[#F26A21]">
+                                                        {p.return_seat_number || 'Otomatis'}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Contact info */}
-                        <div className="bg-white rounded-[20px] p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-xs space-y-3">
-                            <h4 className="text-sm font-bold text-[#0E2A47] pb-3 border-b border-[#E2E8F0] flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-[#F26A21]" />
-                                Data Kontak Pemesan
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-[#F6F8FA] border border-[#E2E8F0] text-xs">
+                        {/* 4. Addons Selection */}
+                        <FlightAddonsSection
+                            addons={addons}
+                            onChange={setAddons}
+                            passengerCount={passengerCount}
+                        />
+
+                        {/* 5. Contact Info */}
+                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-3">
+                            <h3 className="font-bold text-sm text-[#0E2A47] pb-3 border-b border-[#E2E8F0]">
+                                Kontak Pemesan (Pengiriman E-Ticket)
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                                 <div>
-                                    <span className="text-[#5B6B7B] font-semibold">Nama Pemesan:</span>
-                                    <p className="font-bold text-[#0E2A47] mt-0.5">{contact.name}</p>
+                                    <span className="text-[#5B6B7B] block">Nama Lengkap</span>
+                                    <span className="font-semibold text-[#0E2A47]">{contact.name}</span>
                                 </div>
                                 <div>
-                                    <span className="text-[#5B6B7B] font-semibold">Alamat Email:</span>
-                                    <p className="font-bold text-[#0E2A47] mt-0.5">{contact.email}</p>
+                                    <span className="text-[#5B6B7B] block">Email</span>
+                                    <span className="font-semibold text-[#0E2A47]">{contact.email}</span>
                                 </div>
                                 <div>
-                                    <span className="text-[#5B6B7B] font-semibold">Nomor Telepon:</span>
-                                    <p className="font-bold text-[#0E2A47] mt-0.5">{contact.phone}</p>
+                                    <span className="text-[#5B6B7B] block">Nomor Telepon</span>
+                                    <span className="font-semibold text-[#0E2A47]">{contact.phone}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Sticky Price Breakdown & Voucher Card */}
+                    {/* Right Column: Pricing Breakdown & Payment CTA */}
                     <div className="lg:col-span-4 sticky top-24 space-y-6">
-                        {/* P0: Voucher & Promo Code Input Card */}
-                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-4">
-                            <div className="flex items-center gap-2 pb-2 border-b border-[#E2E8F0]">
-                                <Tag className="w-4 h-4 text-[#F26A21]" />
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#0E2A47]">
-                                    Kode Promo & Voucher
-                                </h4>
-                            </div>
+                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-6">
+                            <h3 className="font-bold text-sm text-[#0E2A47] pb-3 border-b border-[#E2E8F0]">
+                                Rincian Biaya
+                            </h3>
 
-                            {appliedVoucher ? (
-                                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-1.5">
+                            {/* Voucher Promo Input */}
+                            <div>
+                                <label className="block text-xs font-bold text-[#5B6B7B] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <Tag className="w-3.5 h-3.5 text-[#F26A21]" />
+                                    Punya Kode Kupon / Voucher?
+                                </label>
+                                {appliedVoucher ? (
+                                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
                                             <Sparkles className="w-4 h-4 text-emerald-600" />
-                                            <span className="font-mono font-bold text-xs text-emerald-900">
-                                                {appliedVoucher.code}
-                                            </span>
+                                            <div>
+                                                <span className="font-mono text-xs font-bold text-emerald-800 block">
+                                                    {appliedVoucher.code}
+                                                </span>
+                                                <span className="text-[11px] text-emerald-700">
+                                                    Hemat {formatRupiah(appliedVoucher.discount_amount)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <p className="text-[11px] text-emerald-700 mt-0.5 font-medium">
-                                            Hemat {formatRupiah(appliedVoucher.discount_amount)}
-                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveVoucher}
+                                            className="text-xs text-red-600 hover:underline font-bold cursor-pointer"
+                                        >
+                                            Hapus
+                                        </button>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleRemoveVoucher}
-                                        className="text-xs text-red-500 hover:text-red-700 font-bold hover:underline cursor-pointer"
-                                    >
-                                        Hapus
-                                    </button>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleApplyVoucher} className="space-y-2">
-                                    <div className="flex gap-2">
+                                ) : (
+                                    <form onSubmit={handleApplyVoucher} className="flex gap-2">
                                         <input
                                             type="text"
-                                            id="input-voucher-code"
-                                            placeholder="Contoh: TERBANGHEMAT"
+                                            placeholder="Contoh: LIBURANSERU"
                                             value={voucherInput}
                                             onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
-                                            className="w-full px-3.5 py-2 text-xs font-mono font-bold bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl focus:ring-2 focus:ring-[#F26A21] focus:outline-none uppercase"
+                                            className="flex-1 px-3.5 py-2 text-xs font-mono font-bold bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F26A21]"
                                         />
                                         <button
                                             type="submit"
-                                            id="btn-apply-voucher"
                                             disabled={voucherLoading}
-                                            className="px-4 py-2 bg-[#0E2A47] hover:bg-[#F26A21] disabled:bg-gray-400 text-white text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                                            className="px-4 py-2 bg-[#0E2A47] hover:bg-[#F26A21] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                                         >
-                                            {voucherLoading ? 'Cek...' : 'Pakai'}
+                                            {voucherLoading ? 'Cek...' : 'Terapkan'}
                                         </button>
+                                    </form>
+                                )}
+                                {voucherError && (
+                                    <p className="text-[11px] text-red-600 font-semibold mt-1.5">{voucherError}</p>
+                                )}
+                                {voucherSuccess && (
+                                    <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">{voucherSuccess}</p>
+                                )}
+                            </div>
+
+                            {/* Price lines */}
+                            <div className="space-y-2.5 text-xs text-[#5B6B7B]">
+                                <div className="flex items-center justify-between">
+                                    <span>Tiket Pergi ({passengerCount}x)</span>
+                                    <span className="font-mono font-semibold text-[#0E2A47]">
+                                        {formatRupiah(outboundTicketTotal)}
+                                    </span>
+                                </div>
+
+                                {isRoundTrip && (
+                                    <div className="flex items-center justify-between">
+                                        <span>Tiket Pulang ({passengerCount}x)</span>
+                                        <span className="font-mono font-semibold text-[#0E2A47]">
+                                            {formatRupiah(returnTicketTotal)}
+                                        </span>
                                     </div>
-                                    {voucherError && (
-                                        <p className="text-[11px] text-red-500 font-medium">{voucherError}</p>
-                                    )}
-                                    <p className="text-[10px] text-[#5B6B7B]">
-                                        Gunakan voucher <strong>TERBANGHEMAT</strong> (10%) atau <strong>LIBURANSERU</strong> (Rp100.000).
-                                    </p>
-                                </form>
-                            )}
-                        </div>
-
-                        {/* Price Breakdown Card */}
-                        <div className="bg-white rounded-[20px] p-6 border border-[#CBD5E1]/70 shadow-xs space-y-5">
-                            <h4 className="text-sm font-bold text-[#0E2A47] pb-3 border-b border-[#E2E8F0]">
-                                Rincian Pembayaran
-                            </h4>
-
-                            <div className="space-y-3 text-xs sm:text-sm">
-                                <div className="flex justify-between text-[#5B6B7B]">
-                                    <span>Tiket ({passengerCount} Penumpang)</span>
-                                    <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
-                                        {formatRupiah(baseTicketTotal)}
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between text-[#5B6B7B]">
-                                    <span>Biaya Layanan & Pajak</span>
-                                    <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
-                                        {formatRupiah(adminFee)}
-                                    </span>
-                                </div>
+                                )}
 
                                 {addonsTotal > 0 && (
-                                    <div className="flex justify-between text-[#5B6B7B]">
-                                        <span>Fasilitas Tambahan (Add-ons)</span>
-                                        <span className="font-mono tabular-nums font-semibold text-[#0E2A47]">
+                                    <div className="flex items-center justify-between text-[#F26A21]">
+                                        <span>Layanan Tambahan (Add-ons)</span>
+                                        <span className="font-mono font-semibold">
                                             +{formatRupiah(addonsTotal)}
                                         </span>
                                     </div>
                                 )}
 
+                                <div className="flex items-center justify-between">
+                                    <span>Biaya Layanan & Administrasi</span>
+                                    <span className="font-mono font-semibold text-[#0E2A47]">
+                                        {formatRupiah(adminFee)}
+                                    </span>
+                                </div>
+
                                 {discountAmount > 0 && (
-                                    <div className="flex justify-between text-emerald-600 font-semibold">
-                                        <span>Potongan Promo ({appliedVoucher?.code})</span>
-                                        <span className="font-mono tabular-nums">
+                                    <div className="flex items-center justify-between text-emerald-600 font-bold">
+                                        <span>Diskon Kupon</span>
+                                        <span className="font-mono">
                                             -{formatRupiah(discountAmount)}
                                         </span>
                                     </div>
                                 )}
 
-                                <div className="pt-3 border-t border-[#E2E8F0] flex justify-between items-center text-base">
-                                    <span className="font-bold text-[#0E2A47]">Total Bayar</span>
-                                    <span className="font-mono tabular-nums text-2xl font-black text-[#F26A21]">
+                                <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-sm">
+                                    <span className="font-bold text-[#0E2A47]">Total Pembayaran</span>
+                                    <span className="font-mono text-xl font-black text-[#F26A21]">
                                         {formatRupiah(totalAmount)}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="bg-[#CFE5F5]/40 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-[#0E2A47] border border-[#0E2A47]/10">
-                                <ShieldCheck className="w-4 h-4 text-[#F26A21] shrink-0 mt-0.5" />
-                                <p className="leading-relaxed">
-                                    Setelah menekan tombol di bawah, kursi Anda akan <strong>ditahan selama 15 menit</strong> untuk menyelesaikan pembayaran.
-                                </p>
-                            </div>
+                            {/* CTA Proceed to Payment */}
+                            <button
+                                type="button"
+                                id="btn-proceed-payment"
+                                disabled={submitting}
+                                onClick={handleCreateBooking}
+                                className="w-full py-4 px-6 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
+                            >
+                                <CreditCard className="w-4 h-4" />
+                                <span>{submitting ? 'Memproses Pesanan...' : 'Lanjut ke Pembayaran'}</span>
+                            </button>
 
-                            {/* Submit Button */}
-                            <div className="pt-2">
-                                <button
-                                    type="button"
-                                    id="btn-create-booking"
-                                    disabled={submitting}
-                                    onClick={handleCreateBooking}
-                                    className="w-full py-3.5 px-6 bg-[#F26A21] hover:bg-[#d95814] disabled:bg-gray-400 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                                >
-                                    <CreditCard className="w-4 h-4" />
-                                    <span>{submitting ? 'Memproses Pesanan...' : 'Lanjut ke Pembayaran'}</span>
-                                    <ArrowRight className="w-4 h-4" />
-                                </button>
+                            <div className="p-3 bg-[#F6F8FA] rounded-xl flex items-center gap-2 text-[11px] text-[#5B6B7B]">
+                                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span>Pembayaran aman dengan jaminan reservasi resmi 1Tiket.</span>
                             </div>
                         </div>
                     </div>

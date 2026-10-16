@@ -19,11 +19,15 @@ class BookingController extends Controller
         $validated = $request->validate([
             'flight_id' => 'required|exists:flights,id',
             'cabin_class' => 'required|in:economy,business',
+            'trip_type' => 'nullable|in:one_way,round_trip',
+            'return_flight_id' => 'nullable|exists:flights,id',
+            'return_cabin_class' => 'nullable|in:economy,business',
             'passengers' => 'required|array|min:1|max:5',
             'passengers.*.title' => 'required|string|in:Tn,Ny,Nn',
             'passengers.*.full_name' => 'required|string|max:100',
             'passengers.*.id_number' => 'required|string|max:20',
             'passengers.*.seat_number' => 'nullable|string|max:4',
+            'passengers.*.return_seat_number' => 'nullable|string|max:4',
             'contact_name' => 'required|string|max:100',
             'contact_email' => 'required|email|max:150',
             'contact_phone' => 'required|string|max:20',
@@ -32,9 +36,11 @@ class BookingController extends Controller
         $user = $request->user();
         $passengerCount = count($validated['passengers']);
         $cabinClass = $validated['cabin_class'];
+        $tripType = $validated['trip_type'] ?? 'one_way';
+        $returnCabinClass = $validated['return_cabin_class'] ?? $cabinClass;
 
-        $booking = DB::transaction(function () use ($request, $validated, $user, $passengerCount, $cabinClass) {
-            // Lock flight row to prevent race conditions on seats
+        $booking = DB::transaction(function () use ($request, $validated, $user, $passengerCount, $cabinClass, $tripType, $returnCabinClass) {
+            // Lock outbound flight row to prevent race conditions on seats
             $flight = Flight::where('id', $validated['flight_id'])->lockForUpdate()->firstOrFail();
 
             $fare = FlightFare::where('flight_id', $flight->id)
@@ -46,7 +52,7 @@ class BookingController extends Controller
 
             if ($seatsLeft < $passengerCount) {
                 throw ValidationException::withMessages([
-                    'flight_id' => ['Maaf, kursi yang tersedia tidak mencukupi untuk jumlah penumpang yang diminta.'],
+                    'flight_id' => ['Maaf, kursi yang tersedia pada penerbangan pergi tidak mencukupi.'],
                 ]);
             }
 
@@ -57,7 +63,7 @@ class BookingController extends Controller
                     $seatNum = strtoupper(trim($p['seat_number']));
                     if (in_array($seatNum, $takenSeats)) {
                         throw ValidationException::withMessages([
-                            'seat_number' => ["Kursi {$seatNum} sudah dipilih oleh penumpang lain. Silakan pilih kursi lain."],
+                            'seat_number' => ["Kursi {$seatNum} pada penerbangan pergi sudah dipilih. Silakan pilih kursi lain."],
                         ]);
                     }
                     if (in_array($seatNum, $requestedSeats)) {
@@ -69,6 +75,45 @@ class BookingController extends Controller
                 }
             }
 
+            // If round trip, validate return flight
+            $returnFlight = null;
+            $returnUnitPrice = null;
+            if ($tripType === 'round_trip' && !empty($validated['return_flight_id'])) {
+                $returnFlight = Flight::where('id', $validated['return_flight_id'])->lockForUpdate()->firstOrFail();
+                $returnFare = FlightFare::where('flight_id', $returnFlight->id)
+                    ->where('cabin_class', $returnCabinClass)
+                    ->firstOrFail();
+
+                $returnTakenSeats = $returnFlight->getTakenSeatNumbers($returnCabinClass);
+                $returnSeatsLeft = $returnFare->seats_total - $returnFlight->getSeatsTakenCount($returnCabinClass);
+
+                if ($returnSeatsLeft < $passengerCount) {
+                    throw ValidationException::withMessages([
+                        'return_flight_id' => ['Maaf, kursi yang tersedia pada penerbangan pulang tidak mencukupi.'],
+                    ]);
+                }
+
+                $requestedReturnSeats = [];
+                foreach ($validated['passengers'] as $p) {
+                    if (!empty($p['return_seat_number'])) {
+                        $retSeatNum = strtoupper(trim($p['return_seat_number']));
+                        if (in_array($retSeatNum, $returnTakenSeats)) {
+                            throw ValidationException::withMessages([
+                                'return_seat_number' => ["Kursi pulang {$retSeatNum} sudah dipilih. Silakan pilih kursi lain."],
+                            ]);
+                        }
+                        if (in_array($retSeatNum, $requestedReturnSeats)) {
+                            throw ValidationException::withMessages([
+                                'return_seat_number' => ["Kursi pulang {$retSeatNum} dipilih lebih dari satu kali."],
+                            ]);
+                        }
+                        $requestedReturnSeats[] = $retSeatNum;
+                    }
+                }
+
+                $returnUnitPrice = $returnFare->price;
+            }
+
             // Generate unique booking code e.g. 1T8K2QZ
             do {
                 $bookingCode = '1T' . strtoupper(Str::random(5));
@@ -76,7 +121,7 @@ class BookingController extends Controller
 
             $unitPrice = $fare->price;
             $adminFee = 5000;
-            $subtotal = ($unitPrice * $passengerCount);
+            $subtotal = ($unitPrice * $passengerCount) + (($returnUnitPrice ?? 0) * $passengerCount);
 
             // Calculate voucher discount
             $discountAmount = 0;
@@ -132,6 +177,10 @@ class BookingController extends Controller
                 'user_id' => $user->id,
                 'flight_id' => $flight->id,
                 'cabin_class' => $cabinClass,
+                'trip_type' => $tripType,
+                'return_flight_id' => $returnFlight ? $returnFlight->id : null,
+                'return_unit_price' => $returnUnitPrice,
+                'return_cabin_class' => $returnFlight ? $returnCabinClass : null,
                 'passenger_count' => $passengerCount,
                 'unit_price' => $unitPrice,
                 'admin_fee' => $adminFee,
@@ -154,6 +203,7 @@ class BookingController extends Controller
                     'full_name' => $p['full_name'],
                     'id_number' => $p['id_number'],
                     'seat_number' => !empty($p['seat_number']) ? strtoupper(trim($p['seat_number'])) : null,
+                    'return_seat_number' => !empty($p['return_seat_number']) ? strtoupper(trim($p['return_seat_number'])) : null,
                 ]);
             }
 
@@ -164,6 +214,9 @@ class BookingController extends Controller
             'flight.airline',
             'flight.originAirport',
             'flight.destinationAirport',
+            'returnFlight.airline',
+            'returnFlight.originAirport',
+            'returnFlight.destinationAirport',
             'passengers',
             'payments.paymentMethod',
         ]);
@@ -178,7 +231,7 @@ class BookingController extends Controller
     {
         $booking = Booking::where('booking_code', $code)
             ->where('user_id', $request->user()->id)
-            ->with(['flight', 'passengers'])
+            ->with(['flight', 'returnFlight', 'passengers'])
             ->firstOrFail();
 
         if ($booking->status !== 'paid') {
@@ -187,35 +240,67 @@ class BookingController extends Controller
             ], 422);
         }
 
-        // Auto assign seat if any passenger has null seat
-        $takenSeats = $booking->flight->getTakenSeatNumbers($booking->cabin_class);
-        $rows = $booking->cabin_class === 'business' ? range(1, 4) : range(5, 20);
-        $cols = $booking->cabin_class === 'business' ? ['A', 'C', 'D', 'F'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+        $checkInType = $request->input('flight_type', 'outbound'); // 'outbound' or 'return'
 
-        foreach ($booking->passengers as $passenger) {
-            if (empty($passenger->seat_number)) {
-                foreach ($rows as $r) {
-                    foreach ($cols as $c) {
-                        $candidate = "{$r}{$c}";
-                        if (!in_array($candidate, $takenSeats)) {
-                            $passenger->seat_number = $candidate;
-                            $passenger->save();
-                            $takenSeats[] = $candidate;
-                            break 2;
+        if ($checkInType === 'return' && $booking->return_flight_id) {
+            $retFlight = $booking->returnFlight;
+            $retCabin = $booking->return_cabin_class ?? $booking->cabin_class;
+            $takenSeats = $retFlight->getTakenSeatNumbers($retCabin);
+            $rows = $retCabin === 'business' ? range(1, 4) : range(5, 20);
+            $cols = $retCabin === 'business' ? ['A', 'C', 'D', 'F'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+
+            foreach ($booking->passengers as $passenger) {
+                if (empty($passenger->return_seat_number)) {
+                    foreach ($rows as $r) {
+                        foreach ($cols as $c) {
+                            $candidate = "{$r}{$c}";
+                            if (!in_array($candidate, $takenSeats)) {
+                                $passenger->return_seat_number = $candidate;
+                                $passenger->save();
+                                $takenSeats[] = $candidate;
+                                break 2;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        $booking->check_in_at = now();
-        $booking->boarding_pass_issued = true;
-        $booking->save();
+            $booking->return_check_in_at = now();
+            $booking->save();
+        } else {
+            // Outbound check-in
+            $takenSeats = $booking->flight->getTakenSeatNumbers($booking->cabin_class);
+            $rows = $booking->cabin_class === 'business' ? range(1, 4) : range(5, 20);
+            $cols = $booking->cabin_class === 'business' ? ['A', 'C', 'D', 'F'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+
+            foreach ($booking->passengers as $passenger) {
+                if (empty($passenger->seat_number)) {
+                    foreach ($rows as $r) {
+                        foreach ($cols as $c) {
+                            $candidate = "{$r}{$c}";
+                            if (!in_array($candidate, $takenSeats)) {
+                                $passenger->seat_number = $candidate;
+                                $passenger->save();
+                                $takenSeats[] = $candidate;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            $booking->check_in_at = now();
+            $booking->boarding_pass_issued = true;
+            $booking->save();
+        }
 
         $booking->load([
             'flight.airline',
             'flight.originAirport',
             'flight.destinationAirport',
+            'returnFlight.airline',
+            'returnFlight.originAirport',
+            'returnFlight.destinationAirport',
             'passengers',
             'payments.paymentMethod',
         ]);
@@ -233,6 +318,9 @@ class BookingController extends Controller
                 'flight.airline',
                 'flight.originAirport',
                 'flight.destinationAirport',
+                'returnFlight.airline',
+                'returnFlight.originAirport',
+                'returnFlight.destinationAirport',
                 'passengers',
                 'payments.paymentMethod',
             ])
@@ -254,6 +342,9 @@ class BookingController extends Controller
                 'flight.airline',
                 'flight.originAirport',
                 'flight.destinationAirport',
+                'returnFlight.airline',
+                'returnFlight.originAirport',
+                'returnFlight.destinationAirport',
                 'passengers',
                 'payments.paymentMethod',
             ])

@@ -8,17 +8,25 @@ export function BookingProvider({ children }) {
         if (saved) {
             try { return JSON.parse(saved); } catch (e) {}
         }
-        // Default tomorrow
+        // Default tomorrow & return 3 days after
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const yyyy = tomorrow.getFullYear();
         const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
         const dd = String(tomorrow.getDate()).padStart(2, '0');
 
+        const returnDate = new Date();
+        returnDate.setDate(returnDate.getDate() + 4);
+        const rYyyy = returnDate.getFullYear();
+        const rMm = String(returnDate.getMonth() + 1).padStart(2, '0');
+        const rDd = String(returnDate.getDate()).padStart(2, '0');
+
         return {
+            trip: 'one_way', // 'one_way' | 'round_trip'
             origin: 'CGK',
             destination: 'DPS',
             date: `${yyyy}-${mm}-${dd}`,
+            return_date: `${rYyyy}-${rMm}-${rDd}`,
             passengers: 1,
             cabin: 'economy',
         };
@@ -32,12 +40,20 @@ export function BookingProvider({ children }) {
         return null;
     });
 
+    const [returnFlight, setReturnFlight] = useState(() => {
+        const saved = sessionStorage.getItem('1tiket_return_flight');
+        if (saved) {
+            try { return JSON.parse(saved); } catch (e) {}
+        }
+        return null;
+    });
+
     const [passengers, setPassengers] = useState(() => {
         const saved = sessionStorage.getItem('1tiket_passengers');
         if (saved) {
             try { return JSON.parse(saved); } catch (e) {}
         }
-        return [{ title: 'Tn', full_name: '', id_number: '', seat_number: null }];
+        return [{ title: 'Tn', full_name: '', id_number: '', seat_number: null, return_seat_number: null }];
     });
 
     const [contact, setContact] = useState(() => {
@@ -77,6 +93,14 @@ export function BookingProvider({ children }) {
     }, [selectedFlight]);
 
     useEffect(() => {
+        if (returnFlight) {
+            sessionStorage.setItem('1tiket_return_flight', JSON.stringify(returnFlight));
+        } else {
+            sessionStorage.removeItem('1tiket_return_flight');
+        }
+    }, [returnFlight]);
+
+    useEffect(() => {
         sessionStorage.setItem('1tiket_passengers', JSON.stringify(passengers));
     }, [passengers]);
 
@@ -96,7 +120,7 @@ export function BookingProvider({ children }) {
         setPassengers((prev) => {
             const next = [...prev];
             while (next.length < count) {
-                next.push({ title: 'Tn', full_name: '', id_number: '', seat_number: null });
+                next.push({ title: 'Tn', full_name: '', id_number: '', seat_number: null, return_seat_number: null });
             }
             return next.slice(0, count);
         });
@@ -104,9 +128,13 @@ export function BookingProvider({ children }) {
 
     const resetBookingFlow = () => {
         setSelectedFlight(null);
-        setPassengers([{ title: 'Tn', full_name: '', id_number: '', seat_number: null }]);
+        setReturnFlight(null);
+        setPassengers([{ title: 'Tn', full_name: '', id_number: '', seat_number: null, return_seat_number: null }]);
         setCurrentBooking(null);
+        setAppliedVoucher(null);
+        setAddons({ baggage_kg: 0, meals: [], insurance: false });
         sessionStorage.removeItem('1tiket_flight');
+        sessionStorage.removeItem('1tiket_return_flight');
         sessionStorage.removeItem('1tiket_passengers');
         sessionStorage.removeItem('1tiket_current_booking');
     };
@@ -118,6 +146,8 @@ export function BookingProvider({ children }) {
                 setSearchCriteria,
                 selectedFlight,
                 setSelectedFlight,
+                returnFlight,
+                setReturnFlight,
                 passengers,
                 setPassengers,
                 updatePassengersCount,

@@ -4,16 +4,18 @@ import { motion } from 'framer-motion';
 import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import RouteMiniMap from './RouteMiniMap';
-import { ArrowLeftRight, Calendar, Users, Briefcase, Search, MapPin, PlaneTakeoff, PlaneLanding } from 'lucide-react';
+import { ArrowLeftRight, Calendar, Users, Briefcase, Search, MapPin, PlaneTakeoff, PlaneLanding, Repeat, ArrowRight } from 'lucide-react';
 
 export default function FlightSearchForm({ initialValues, onSearchSubmit, showMap = true }) {
     const navigate = useNavigate();
     const { searchCriteria, setSearchCriteria, updatePassengersCount } = useBooking();
 
+    const [tripType, setTripType] = useState(initialValues?.trip || searchCriteria.trip || 'one_way');
     const [airports, setAirports] = useState([]);
     const [origin, setOrigin] = useState(initialValues?.origin || searchCriteria.origin || 'CGK');
     const [destination, setDestination] = useState(initialValues?.destination || searchCriteria.destination || 'DPS');
     const [date, setDate] = useState(initialValues?.date || searchCriteria.date);
+    const [returnDate, setReturnDate] = useState(initialValues?.return_date || searchCriteria.return_date || '');
     const [passengers, setPassengers] = useState(initialValues?.passengers || searchCriteria.passengers || 1);
     const [cabin, setCabin] = useState(initialValues?.cabin || searchCriteria.cabin || 'economy');
 
@@ -34,6 +36,18 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
             .then((data) => setAirports(data))
             .catch((e) => console.error(e));
     }, []);
+
+    // Ensure returnDate is at least date if empty or invalid
+    useEffect(() => {
+        if (!returnDate && date) {
+            const d = new Date(date);
+            d.setDate(d.getDate() + 3);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            setReturnDate(`${yyyy}-${mm}-${dd}`);
+        }
+    }, [date, returnDate]);
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -91,10 +105,17 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
             return;
         }
 
+        if (tripType === 'round_trip' && returnDate < date) {
+            setError('Tanggal kepulangan harus sama atau setelah tanggal keberangkatan.');
+            return;
+        }
+
         const newCriteria = {
+            trip: tripType,
             origin,
             destination,
             date,
+            return_date: tripType === 'round_trip' ? returnDate : null,
             passengers: parseInt(passengers, 10),
             cabin,
         };
@@ -105,7 +126,18 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
         if (onSearchSubmit) {
             onSearchSubmit(newCriteria);
         } else {
-            navigate(`/cari?origin=${origin}&destination=${destination}&date=${date}&passengers=${passengers}&cabin=${cabin}`);
+            const queryParams = new URLSearchParams({
+                trip: tripType,
+                origin,
+                destination,
+                date,
+                passengers: passengers.toString(),
+                cabin,
+            });
+            if (tripType === 'round_trip' && returnDate) {
+                queryParams.set('return_date', returnDate);
+            }
+            navigate(`/cari?${queryParams.toString()}`);
         }
     };
 
@@ -116,6 +148,41 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                     <span>⚠️ {error}</span>
                 </div>
             )}
+
+            {/* Trip Type Selector (One Way vs Round Trip) */}
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#E2E8F0]">
+                <button
+                    type="button"
+                    onClick={() => setTripType('one_way')}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        tripType === 'one_way'
+                            ? 'bg-[#0E2A47] text-white shadow-md'
+                            : 'bg-[#F6F8FA] text-[#5B6B7B] hover:bg-[#EEF2F6] hover:text-[#0E2A47]'
+                    }`}
+                >
+                    <ArrowRight className="w-4 h-4" />
+                    <span>Satu Arah</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setTripType('round_trip');
+                        if (!returnDate && date) {
+                            const d = new Date(date);
+                            d.setDate(d.getDate() + 3);
+                            setReturnDate(d.toISOString().split('T')[0]);
+                        }
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        tripType === 'round_trip'
+                            ? 'bg-[#0E2A47] text-white shadow-md'
+                            : 'bg-[#F6F8FA] text-[#5B6B7B] hover:bg-[#EEF2F6] hover:text-[#0E2A47]'
+                    }`}
+                >
+                    <Repeat className="w-4 h-4" />
+                    <span>Pulang Pergi</span>
+                </button>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Route Selector (Origin - Swap - Destination) */}
@@ -146,7 +213,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                             <MapPin className="w-4 h-4 text-[#5B6B7B]" />
                         </button>
 
-                        {/* Autocomplete Dropdown (S2) */}
+                        {/* Autocomplete Dropdown */}
                         {originOpen && (
                             <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
                                 <input
@@ -184,8 +251,8 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                         )}
                     </div>
 
-                    {/* Swap Button (S3 & N5: rotate 180deg) */}
-                    <div className="md:col-span-1 flex justify-center">
+                    {/* Swap Button */}
+                    <div className="md:col-span-1 flex justify-center py-1">
                         <motion.button
                             type="button"
                             id="btn-swap-airports"
@@ -225,7 +292,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                             <MapPin className="w-4 h-4 text-[#5B6B7B]" />
                         </button>
 
-                        {/* Autocomplete Dropdown (S2) */}
+                        {/* Autocomplete Dropdown */}
                         {destOpen && (
                             <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
                                 <input
@@ -265,12 +332,12 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                 </div>
 
                 {/* Date, Passengers, Cabin Class & Submit */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div className={`grid grid-cols-1 ${tripType === 'round_trip' ? 'sm:grid-cols-2 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-4'} gap-4 items-end`}>
                     {/* Departure Date */}
                     <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-[#5B6B7B] mb-1.5 flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5 text-[#0E2A47]" />
-                            Tanggal Berangkat
+                            {tripType === 'round_trip' ? 'Tanggal Pergi' : 'Tanggal Berangkat'}
                         </label>
                         <input
                             type="date"
@@ -282,6 +349,25 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                             className="w-full h-13 px-4 bg-[#F6F8FA] border border-[#CBD5E1] rounded-2xl text-sm font-semibold text-[#0E2A47] focus:outline-none focus:ring-2 focus:ring-[#F26A21] cursor-pointer"
                         />
                     </div>
+
+                    {/* Return Date (if round_trip) */}
+                    {tripType === 'round_trip' && (
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-[#5B6B7B] mb-1.5 flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 text-[#F26A21]" />
+                                Tanggal Pulang
+                            </label>
+                            <input
+                                type="date"
+                                id="input-return-date"
+                                min={date || todayStr}
+                                value={returnDate}
+                                onChange={(e) => setReturnDate(e.target.value)}
+                                required
+                                className="w-full h-13 px-4 bg-[#F6F8FA] border border-[#CBD5E1] rounded-2xl text-sm font-semibold text-[#0E2A47] focus:outline-none focus:ring-2 focus:ring-[#F26A21] cursor-pointer"
+                            />
+                        </div>
+                    )}
 
                     {/* Passenger Count (1-5) */}
                     <div>
@@ -320,7 +406,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                         </select>
                     </div>
 
-                    {/* CTA Button with N17 Micro-interaction */}
+                    {/* CTA Button */}
                     <div>
                         <motion.button
                             type="submit"
@@ -334,7 +420,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                     </div>
                 </div>
 
-                {/* Animated Route Mini Map (N4) */}
+                {/* Animated Route Mini Map */}
                 {showMap && originAirport && destAirport && origin !== destination && (
                     <RouteMiniMap originAirport={originAirport} destAirport={destAirport} />
                 )}

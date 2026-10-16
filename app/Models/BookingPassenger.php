@@ -16,6 +16,8 @@ class BookingPassenger extends Model
         'id_number',
         'seat_number',
         'ticket_number',
+        'return_seat_number',
+        'return_ticket_number',
     ];
 
     public function booking()

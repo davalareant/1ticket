@@ -22,6 +22,11 @@ class Booking extends Model
         'contact_email',
         'contact_phone',
         'status',
+        'trip_type',
+        'return_flight_id',
+        'return_unit_price',
+        'return_cabin_class',
+        'return_check_in_at',
         'voucher_code',
         'discount_amount',
         'addons_total',
@@ -36,6 +41,7 @@ class Booking extends Model
         'expires_at' => 'datetime',
         'paid_at' => 'datetime',
         'check_in_at' => 'datetime',
+        'return_check_in_at' => 'datetime',
         'addons_data' => 'array',
         'boarding_pass_issued' => 'boolean',
     ];
@@ -48,6 +54,11 @@ class Booking extends Model
     public function flight()
     {
         return $this->belongsTo(Flight::class);
+    }
+
+    public function returnFlight()
+    {
+        return $this->belongsTo(Flight::class, 'return_flight_id');
     }
 
     public function passengers()

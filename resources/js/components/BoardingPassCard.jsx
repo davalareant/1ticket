@@ -1,33 +1,53 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Plane, Calendar, Clock, User, QrCode, Printer, CheckCircle } from 'lucide-react';
+import { Plane, Calendar, Clock, User, QrCode, Printer, CheckCircle, Repeat } from 'lucide-react';
+import { formatDate } from '../utils/formatters';
 
-export default function BoardingPassCard({ booking, passenger, index = 0 }) {
+export default function BoardingPassCard({ booking, passenger, index = 0, isReturn = false }) {
     const [stubHovered, setStubHovered] = useState(false);
 
     if (!booking || !passenger) return null;
 
-    const flight = booking.flight;
-    const airline = flight?.airline;
-    const origin = flight?.origin_airport || flight?.originAirport;
-    const destination = flight?.destination_airport || flight?.destinationAirport;
+    const flight = isReturn
+        ? (booking.return_flight || booking.returnFlight)
+        : (booking.flight);
+
+    if (!flight) return null;
+
+    const airline = flight.airline;
+    const origin = flight.origin_airport || flight.originAirport;
+    const destination = flight.destination_airport || flight.destinationAirport;
+
+    const seatNumber = isReturn
+        ? (passenger.return_seat_number || 'AUTO')
+        : (passenger.seat_number || 'AUTO');
+
+    const ticketNumber = isReturn
+        ? (passenger.return_ticket_number || `1TR-${passenger.id}`)
+        : (passenger.ticket_number || `1T-${passenger.id}`);
+
+    const cabinClass = isReturn
+        ? (booking.return_cabin_class || booking.cabin_class)
+        : (booking.cabin_class);
 
     // QR value
     const qrData = JSON.stringify({
         booking: booking.booking_code,
-        ticket: passenger.ticket_number,
+        ticket: ticketNumber,
         passenger: passenger.full_name,
-        flight: flight?.flight_number,
-        seat: passenger.seat_number,
+        flight: flight.flight_number,
+        seat: seatNumber,
+        type: isReturn ? 'return' : 'outbound',
     });
 
-    const isBusiness = booking.cabin_class === 'business';
+    const isBusiness = cabinClass === 'business';
 
     // Format Date & Time
-    const depDate = flight?.local_departure_date || flight?.departure_at?.split(' ')[0] || '';
-    const depTime = flight?.local_departure_time || '08:00';
-    const arrTime = flight?.local_arrival_time || '10:00';
+    const rawDate = flight.local_departure_date || (flight.departure_at ? flight.departure_at.split('T')[0].split(' ')[0] : '');
+    const depDate = rawDate ? formatDate(rawDate) : '';
+    const depTime = flight.local_departure_time || '08:00';
+    const arrTime = flight.local_arrival_time || '10:00';
 
     return (
         <motion.div
@@ -43,7 +63,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
             {/* Top/Left Boarding Pass Header Strip */}
             <div
                 className="w-full md:w-4 h-2.5 md:h-auto shrink-0"
-                style={{ backgroundColor: airline?.brand_color || '#0E2A47' }}
+                style={{ backgroundColor: isReturn ? '#F26A21' : (airline?.brand_color || '#0E2A47') }}
             />
 
             {/* Main Boarding Pass Body (Left Side) */}
@@ -58,10 +78,14 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                             {airline?.code || '1T'}
                         </div>
                         <div>
-                            <span className="text-xs uppercase font-extrabold tracking-widest text-[#5B6B7B]">
-                                Boarding Pass
-                            </span>
-                            <h3 className="text-lg font-bold text-[#0E2A47] leading-none">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[11px] uppercase font-black tracking-widest px-2 py-0.5 rounded ${
+                                    isReturn ? 'bg-[#F26A21]/10 text-[#F26A21]' : 'bg-[#0E2A47]/10 text-[#0E2A47]'
+                                }`}>
+                                    {isReturn ? 'Boarding Pass Pulang' : 'Boarding Pass Pergi'}
+                                </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-[#0E2A47] leading-none mt-1">
                                 {airline?.name || '1Tiket Air'}
                             </h3>
                         </div>
@@ -88,67 +112,81 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                         <span className="font-mono text-3xl sm:text-4xl font-black text-[#0E2A47] tracking-tight">
                             {origin?.iata_code}
                         </span>
-                        <p className="text-xs text-[#5B6B7B] font-semibold truncate">
-                            {origin?.city}
-                        </p>
-                        <p className="font-mono text-sm font-bold text-[#0E2A47] mt-1">
+                        <p className="font-mono text-xl sm:text-2xl font-black text-[#F26A21] mt-0.5">
                             {depTime}
+                        </p>
+                        <p className="text-xs text-[#5B6B7B] font-semibold truncate mt-1">
+                            {origin?.city} ({origin?.name})
                         </p>
                     </div>
 
                     <div className="col-span-1 flex flex-col items-center justify-center">
-                        <Plane className="w-5 h-5 text-[#F26A21] rotate-90" />
-                        <div className="w-full h-0.5 border-b border-dashed border-[#CBD5E1] my-1" />
+                        <span className="text-[10px] text-[#5B6B7B] font-bold mb-1">
+                            {isReturn ? 'PULANG' : 'PERGI'}
+                        </span>
+                        <Plane className={`w-5 h-5 ${isReturn ? 'text-[#F26A21]' : 'text-[#0E2A47]'}`} />
+                        <span className="text-[9px] text-[#5B6B7B] font-semibold mt-1">LANGSUNG</span>
                     </div>
 
                     <div className="col-span-3 text-right">
                         <span className="font-mono text-3xl sm:text-4xl font-black text-[#0E2A47] tracking-tight">
                             {destination?.iata_code}
                         </span>
-                        <p className="text-xs text-[#5B6B7B] font-semibold truncate">
-                            {destination?.city}
-                        </p>
-                        <p className="font-mono text-sm font-bold text-[#0E2A47] mt-1">
+                        <p className="font-mono text-xl sm:text-2xl font-black text-[#F26A21] mt-0.5">
                             {arrTime}
                         </p>
-                    </div>
-                </div>
-
-                {/* Passenger & Ticket Details Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F6F8FA] border border-[#E2E8F0] text-xs">
-                    <div>
-                        <span className="text-[#5B6B7B] font-semibold uppercase">Nama Penumpang</span>
-                        <p className="font-bold text-[#0E2A47] text-sm mt-0.5 truncate">
-                            {passenger.title}. {passenger.full_name}
-                        </p>
-                    </div>
-
-                    <div>
-                        <span className="text-[#5B6B7B] font-semibold uppercase">Penerbangan</span>
-                        <p className="font-mono font-bold text-[#0E2A47] text-sm mt-0.5">
-                            {flight?.flight_number}
-                        </p>
-                    </div>
-
-                    <div>
-                        <span className="text-[#5B6B7B] font-semibold uppercase">Nomor Kursi</span>
-                        <p className="font-mono font-black text-[#F26A21] text-base mt-0.5">
-                            {passenger.seat_number || 'Auto'}
-                        </p>
-                    </div>
-
-                    <div>
-                        <span className="text-[#5B6B7B] font-semibold uppercase">Kode Booking</span>
-                        <p className="font-mono font-bold text-[#0E2A47] text-sm mt-0.5">
-                            {booking.booking_code}
+                        <p className="text-xs text-[#5B6B7B] font-semibold truncate mt-1">
+                            {destination?.city} ({destination?.name})
                         </p>
                     </div>
                 </div>
 
-                {/* Bottom Barcode Mockup */}
+                {/* Passenger Info Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-[#F6F8FA] rounded-2xl border border-[#CBD5E1]/60">
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-[#5B6B7B] block">
+                            Nama Penumpang
+                        </span>
+                        <span className="font-bold text-sm text-[#0E2A47] block truncate">
+                            {passenger.full_name}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-[#5B6B7B] block">
+                            No. Penerbangan
+                        </span>
+                        <span className="font-mono font-bold text-sm text-[#0E2A47] block">
+                            {flight.flight_number}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-[#5B6B7B] block">
+                            Tanggal Terbang
+                        </span>
+                        <span className="font-mono font-bold text-sm text-[#0E2A47] block">
+                            {depDate}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span className="text-[10px] uppercase font-bold text-[#5B6B7B] block">
+                            Nomor Kursi
+                        </span>
+                        <span className="font-mono font-extrabold text-base text-[#F26A21] block">
+                            {seatNumber}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Bottom Bar: Booking Code & E-Ticket Number */}
                 <div className="flex items-center justify-between text-xs text-[#5B6B7B] pt-2 border-t border-[#E2E8F0]">
                     <span className="font-mono">
-                        ETIKET: {passenger.ticket_number || '1T-PROCESSING'}
+                        KODE BOOKING: <strong>{booking.booking_code}</strong>
+                    </span>
+                    <span className="font-mono">
+                        ETIKET: {ticketNumber}
                     </span>
                     <span className="font-mono text-[10px] hidden sm:inline">
                         GATE D4 • BOARDING 30M SEBELUM BERANGKAT
@@ -156,7 +194,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                 </div>
             </div>
 
-            {/* Perforation Line & Notches (N16 Tearable Stub Effect) */}
+            {/* Perforation Line & Notches */}
             <div className="relative flex md:flex-col items-center justify-center">
                 <div className="hidden md:block w-px h-full border-r-2 border-dashed border-[#CBD5E1]" />
                 <div className="md:hidden w-full h-px border-b-2 border-dashed border-[#CBD5E1]" />
@@ -167,7 +205,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                 <div className="hidden md:block absolute -bottom-4 w-7 h-7 bg-[#F6F8FA] rounded-full border-t border-[#CBD5E1]" />
             </div>
 
-            {/* Tearable Stub (Right Side) with Micro-tear Animation on Hover/Click (N16) */}
+            {/* Tearable Stub (Right Side) */}
             <motion.div
                 animate={{
                     x: stubHovered ? 4 : 0,
@@ -177,7 +215,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                 onMouseEnter={() => setStubHovered(true)}
                 onMouseLeave={() => setStubHovered(false)}
                 className="w-full md:w-64 p-6 sm:p-7 bg-[#F6F8FA]/90 flex flex-col justify-between items-center text-center shrink-0 cursor-pointer"
-                title="Stub Tiket (Klik atau sorot untuk efek stub robek)"
+                title="Stub Tiket"
             >
                 <div className="w-full">
                     <span className="text-[10px] uppercase tracking-widest font-bold text-[#5B6B7B]">
@@ -191,7 +229,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                     </p>
                 </div>
 
-                {/* Glowing QR Code (N15) */}
+                {/* Glowing QR Code */}
                 <div className="my-4 p-3 bg-white rounded-2xl shadow-md border border-[#E2E8F0] relative group">
                     <QRCodeSVG
                         value={qrData}
@@ -208,12 +246,12 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                     <div className="bg-white p-2 rounded-xl border border-[#CBD5E1] text-center mb-2">
                         <span className="text-[10px] text-[#5B6B7B] uppercase block">Kursi</span>
                         <span className="font-mono text-xl font-black text-[#F26A21]">
-                            {passenger.seat_number || 'AUTO'}
+                            {seatNumber}
                         </span>
                     </div>
 
                     <span className="font-mono text-[10px] text-[#5B6B7B] block truncate">
-                        {passenger.ticket_number}
+                        {ticketNumber}
                     </span>
                 </div>
             </motion.div>

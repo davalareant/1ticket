@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import { api } from '../api/client';
 import BoardingPassCard from '../components/BoardingPassCard';
 import AirplaneLoader from '../components/AirplaneLoader';
-import { Printer, Ticket, CheckCircle, ArrowRight, Share2 } from 'lucide-react';
+import { Printer, Ticket, CheckCircle, ArrowRight, Share2, Repeat, Plane } from 'lucide-react';
 
 export default function TicketPage() {
     const { kode } = useParams();
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [activeTab, setActiveTab] = useState('all'); // 'all' | 'outbound' | 'return'
 
     useEffect(() => {
         api.getBooking(kode)
@@ -26,7 +27,7 @@ export default function TicketPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#F6F8FA]">
-                <AirplaneLoader message="Mencetak Boarding Pass digital Anda…" />
+                <AirplaneLoader message="Mencetak Boarding Pass digital Anda..." />
             </div>
         );
     }
@@ -41,6 +42,8 @@ export default function TicketPage() {
             </div>
         );
     }
+
+    const hasReturn = !!(booking.return_flight_id || booking.return_flight || booking.returnFlight);
 
     return (
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
@@ -83,23 +86,96 @@ export default function TicketPage() {
                             <span>Lihat di Tiket Saya</span>
                         </Link>
                     </div>
+
+                    {/* Filter Tabs if Round Trip */}
+                    {hasReturn && (
+                        <div className="mt-8 flex items-center justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('all')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                    activeTab === 'all'
+                                        ? 'bg-white text-[#0E2A47]'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                            >
+                                Semua Boarding Pass
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('outbound')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                    activeTab === 'outbound'
+                                        ? 'bg-white text-[#0E2A47]'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                            >
+                                Tiket Pergi Saja
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('return')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                    activeTab === 'return'
+                                        ? 'bg-white text-[#0E2A47]'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                            >
+                                Tiket Pulang Saja
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Boarding Passes (Printer Ejection Animation N15) */}
+            {/* Boarding Passes Render */}
             <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-                {/* Printer Slot Graphic Header (N15) */}
                 <div className="max-w-lg mx-auto h-3.5 bg-[#0E2A47] rounded-full shadow-inner mb-8 print:hidden" />
 
-                <div className="space-y-6">
-                    {booking.passengers?.map((passenger, idx) => (
-                        <BoardingPassCard
-                            key={passenger.id || idx}
-                            booking={booking}
-                            passenger={passenger}
-                            index={idx}
-                        />
-                    ))}
+                <div className="space-y-8">
+                    {/* 1. Outbound Boarding Passes */}
+                    {(activeTab === 'all' || activeTab === 'outbound') && (
+                        <div>
+                            {hasReturn && (
+                                <div className="mb-3 px-2 flex items-center gap-2 text-xs font-bold text-[#0E2A47] uppercase tracking-wider">
+                                    <Plane className="w-4 h-4 text-[#0E2A47]" />
+                                    <span>Penerbangan Keberangkatan (Pergi)</span>
+                                </div>
+                            )}
+                            <div className="space-y-6">
+                                {booking.passengers?.map((passenger, idx) => (
+                                    <BoardingPassCard
+                                        key={`outbound-${passenger.id || idx}`}
+                                        booking={booking}
+                                        passenger={passenger}
+                                        index={idx}
+                                        isReturn={false}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 2. Return Boarding Passes */}
+                    {hasReturn && (activeTab === 'all' || activeTab === 'return') && (
+                        <div className="pt-4">
+                            <div className="mb-3 px-2 flex items-center gap-2 text-xs font-bold text-[#F26A21] uppercase tracking-wider">
+                                <Repeat className="w-4 h-4 text-[#F26A21]" />
+                                <span>Penerbangan Kepulangan (Pulang)</span>
+                            </div>
+                            <div className="space-y-6">
+                                {booking.passengers?.map((passenger, idx) => (
+                                    <BoardingPassCard
+                                        key={`return-${passenger.id || idx}`}
+                                        booking={booking}
+                                        passenger={passenger}
+                                        index={idx}
+                                        isReturn={true}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Return Home CTA */}

@@ -53,7 +53,7 @@ export const api = {
     getBookings: () => apiRequest('/bookings'),
     getBooking: (code) => apiRequest(`/bookings/${code}`),
     cancelBooking: (code) => apiRequest(`/bookings/${code}/cancel`, { method: 'POST' }),
-    checkInBooking: (code) => apiRequest(`/bookings/${code}/check-in`, { method: 'POST' }),
+    checkInBooking: (code, flightType = 'outbound') => apiRequest(`/bookings/${code}/check-in`, { method: 'POST', body: { flight_type: flightType } }),
 
     // Vouchers
     validateVoucher: (code, subtotal) => apiRequest('/vouchers/validate', {

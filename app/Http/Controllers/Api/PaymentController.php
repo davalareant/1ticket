@@ -152,12 +152,49 @@ class PaymentController extends Controller
 
                     $p->save();
                 }
+
+                // If round trip, auto assign return seats and generate return ticket numbers
+                if ($booking->return_flight_id) {
+                    $returnFlight = $booking->returnFlight;
+                    $returnCabin = $booking->return_cabin_class ?? $cabin;
+                    $returnTaken = $returnFlight->getTakenSeatNumbers($returnCabin);
+
+                    $retRows = $returnCabin === 'business' ? [1, 2, 3, 4] : range(5, 24);
+                    $retCols = $returnCabin === 'business' ? ['A', 'C', 'D', 'F'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+
+                    $availableRetSeats = [];
+                    foreach ($retRows as $r) {
+                        foreach ($retCols as $c) {
+                            $s = $r . $c;
+                            if (!in_array($s, $returnTaken)) {
+                                $availableRetSeats[] = $s;
+                            }
+                        }
+                    }
+
+                    $retSeatIdx = 0;
+                    foreach ($booking->passengers as $p) {
+                        if (empty($p->return_seat_number) && isset($availableRetSeats[$retSeatIdx])) {
+                            $p->return_seat_number = $availableRetSeats[$retSeatIdx];
+                            $retSeatIdx++;
+                        }
+
+                        if (empty($p->return_ticket_number)) {
+                            $p->return_ticket_number = '1TR-' . $p->booking_id . mt_rand(1000, 9999) . '-' . $p->id;
+                        }
+
+                        $p->save();
+                    }
+                }
             });
 
             $booking->load([
                 'flight.airline',
                 'flight.originAirport',
                 'flight.destinationAirport',
+                'returnFlight.airline',
+                'returnFlight.originAirport',
+                'returnFlight.destinationAirport',
                 'passengers',
                 'payments.paymentMethod',
             ]);
