@@ -149,39 +149,58 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                 </div>
             )}
 
-            {/* Trip Type Selector (One Way vs Round Trip) */}
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#E2E8F0]">
-                <button
-                    type="button"
-                    onClick={() => setTripType('one_way')}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                        tripType === 'one_way'
-                            ? 'bg-[#0E2A47] text-white shadow-md'
-                            : 'bg-[#F6F8FA] text-[#5B6B7B] hover:bg-[#EEF2F6] hover:text-[#0E2A47]'
-                    }`}
-                >
-                    <ArrowRight className="w-4 h-4" />
-                    <span>Satu Arah</span>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setTripType('round_trip');
-                        if (!returnDate && date) {
-                            const d = new Date(date);
-                            d.setDate(d.getDate() + 3);
-                            setReturnDate(d.toISOString().split('T')[0]);
-                        }
-                    }}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                        tripType === 'round_trip'
-                            ? 'bg-[#0E2A47] text-white shadow-md'
-                            : 'bg-[#F6F8FA] text-[#5B6B7B] hover:bg-[#EEF2F6] hover:text-[#0E2A47]'
-                    }`}
-                >
-                    <Repeat className="w-4 h-4" />
-                    <span>Pulang Pergi</span>
-                </button>
+            {/* Trip Type Selector (One Way vs Round Trip with Spring Layout Slider) */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#E2E8F0]">
+                <div className="inline-flex p-1 bg-[#F1F5F9] rounded-2xl border border-[#CBD5E1]/60 relative">
+                    <button
+                        type="button"
+                        id="tab-trip-one-way"
+                        onClick={() => setTripType('one_way')}
+                        className={`relative z-10 px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors duration-200 cursor-pointer ${
+                            tripType === 'one_way' ? 'text-white' : 'text-[#5B6B7B] hover:text-[#0E2A47]'
+                        }`}
+                    >
+                        {tripType === 'one_way' && (
+                            <motion.div
+                                layoutId="activeTripPill"
+                                className="absolute inset-0 bg-[#0E2A47] rounded-xl shadow-md z-[-1]"
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
+                        )}
+                        <ArrowRight className="w-4 h-4" />
+                        <span>Satu Arah</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="tab-trip-round-trip"
+                        onClick={() => {
+                            setTripType('round_trip');
+                            if (!returnDate && date) {
+                                const d = new Date(date);
+                                d.setDate(d.getDate() + 3);
+                                setReturnDate(d.toISOString().split('T')[0]);
+                            }
+                        }}
+                        className={`relative z-10 px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors duration-200 cursor-pointer ${
+                            tripType === 'round_trip' ? 'text-white' : 'text-[#5B6B7B] hover:text-[#0E2A47]'
+                        }`}
+                    >
+                        {tripType === 'round_trip' && (
+                            <motion.div
+                                layoutId="activeTripPill"
+                                className="absolute inset-0 bg-[#0E2A47] rounded-xl shadow-md z-[-1]"
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
+                        )}
+                        <Repeat className="w-4 h-4" />
+                        <span>Pulang Pergi</span>
+                    </button>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-[#5B6B7B]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Harga Final Tanpa Biaya Tersembunyi</span>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -251,18 +270,20 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                         )}
                     </div>
 
-                    {/* Swap Button */}
+                    {/* Swap Button with Spring Interaction */}
                     <div className="md:col-span-1 flex justify-center py-1">
                         <motion.button
                             type="button"
                             id="btn-swap-airports"
                             onClick={handleSwap}
+                            whileHover={{ scale: 1.15, rotate: 90 }}
+                            whileTap={{ scale: 0.88, rotate: 180 }}
                             animate={{ rotate: swapRotating ? 180 : 0 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="w-11 h-11 rounded-full bg-[#0E2A47] hover:bg-[#F26A21] text-white flex items-center justify-center shadow-md active:scale-90 transition-colors cursor-pointer"
+                            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                            className="w-12 h-12 rounded-full bg-[#0E2A47] hover:bg-[#F26A21] text-white flex items-center justify-center shadow-lg transition-colors cursor-pointer border-2 border-white group"
                             title="Tukar bandara asal dan tujuan"
                         >
-                            <ArrowLeftRight className="w-5 h-5" />
+                            <ArrowLeftRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         </motion.button>
                     </div>
 
@@ -406,15 +427,18 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                         </select>
                     </div>
 
-                    {/* CTA Button */}
+                    {/* CTA Button with Shimmer & Spring Interaction */}
                     <div>
                         <motion.button
                             type="submit"
                             id="btn-search-flights"
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full h-13 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-base"
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.96 }}
+                            className="relative overflow-hidden w-full h-13 bg-gradient-to-r from-[#F26A21] via-[#E0530B] to-[#F26A21] bg-[length:200%_auto] hover:bg-right text-white font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer text-base group"
                         >
-                            <Search className="w-5 h-5 stroke-[2.5]" />
+                            {/* Shimmer light sweep */}
+                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                            <Search className="w-5 h-5 stroke-[2.5] group-hover:rotate-12 transition-transform duration-300" />
                             <span>Cari Penerbangan</span>
                         </motion.button>
                     </div>

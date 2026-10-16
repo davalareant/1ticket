@@ -93,14 +93,28 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                                 {/* Dotted route bar */}
                                 <div className="w-full h-0.5 border-b-2 border-dashed border-[#CBD5E1]" />
 
-                                {/* Small plane sliding forward on card hover (N8) */}
+                                {/* Glowing Contrail Trail on Hover */}
+                                <motion.div
+                                    className="absolute left-0 h-0.5 bg-gradient-to-r from-transparent via-[#0284C7] to-[#F26A21] rounded-full"
+                                    initial={{ width: '0%' }}
+                                    animate={{ width: isHovered ? '65%' : '0%' }}
+                                    transition={{ duration: 0.45, ease: 'easeOut' }}
+                                />
+
+                                {/* Small plane sliding forward with banking rotation on card hover */}
                                 <motion.div
                                     className="absolute"
-                                    animate={{ x: isHovered ? 25 : 0 }}
-                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    animate={{
+                                        x: isHovered ? 32 : 0,
+                                        scale: isHovered ? 1.15 : 1,
+                                        rotate: isHovered ? 15 : 0
+                                    }}
+                                    transition={{ type: 'spring', stiffness: 280, damping: 20 }}
                                 >
-                                    <div className="w-6 h-6 rounded-full bg-[#CFE5F5] text-[#0E2A47] flex items-center justify-center shadow-xs">
-                                        <Plane className="w-3.5 h-3.5 fill-[#0E2A47]" />
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-xs transition-colors duration-300 ${
+                                        isHovered ? 'bg-[#F26A21] text-white shadow-md' : 'bg-[#CFE5F5] text-[#0E2A47]'
+                                    }`}>
+                                        <Plane className={`w-3.5 h-3.5 ${isHovered ? 'fill-white text-white rotate-45' : 'fill-[#0E2A47]'}`} />
                                     </div>
                                 </motion.div>
                             </div>

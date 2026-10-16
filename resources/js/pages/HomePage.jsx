@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import FlightTakeoffHero from '../components/FlightTakeoffHero';
 import FlightSearchForm from '../components/FlightSearchForm';
+import FlightScrollSwipeTransition from '../components/FlightScrollSwipeTransition';
 import { useToast } from '../components/ui/Toast';
 import { api } from '../api/client';
 import { formatRupiah, formatDate } from '../utils/formatters';
@@ -168,10 +171,33 @@ export default function HomePage() {
             .catch((err) => console.log('Error loading dynamic vouchers:', err));
     }, []);
 
-    const handleCopyVoucher = (code) => {
-        navigator.clipboard.writeText(code);
+    const handleCopyVoucher = (code, e) => {
+        try {
+            if (navigator?.clipboard?.writeText) {
+                navigator.clipboard.writeText(code).catch(() => {});
+            }
+        } catch (err) {
+            // Ignore clipboard permission restrictions
+        }
         setCopiedCode(code);
         showToast(`Kupon ${code} berhasil disalin! Siap digunakan saat checkout.`, 'success');
+
+        // Confetti burst micro-interaction on user click
+        try {
+            const rect = e?.currentTarget?.getBoundingClientRect();
+            const originX = rect ? (rect.left + rect.width / 2) / window.innerWidth : 0.5;
+            const originY = rect ? (rect.top + rect.height / 2) / window.innerHeight : 0.5;
+            confetti({
+                particleCount: 45,
+                spread: 70,
+                origin: { x: originX, y: originY },
+                colors: ['#F26A21', '#0E2A47', '#0284C7', '#FBBF24'],
+                disableForReducedMotion: true
+            });
+        } catch (err) {
+            // Safe fallback
+        }
+
         setTimeout(() => setCopiedCode(null), 2500);
     };
 
@@ -183,7 +209,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Animated Hero Section */}
             <FlightTakeoffHero />
 
@@ -192,9 +218,23 @@ export default function HomePage() {
                 <FlightSearchForm />
             </div>
 
+            {/* Section Transition 1: Pesawat Menyapu Layar ke Section Promo */}
+            <FlightScrollSwipeTransition
+                direction="ltr"
+                title="Menjelajah Rute Promo Spesial"
+                flightNumber="1T-101"
+                altitude="28.000 ft"
+            />
+
             {/* Section 1: Promo & Voucher Banner Cards (Traveloka Style) */}
-            <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 pb-12 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5 }}
+                    className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4"
+                >
                     <div>
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26A21]/10 text-[#F26A21] text-xs font-black uppercase tracking-wider mb-2">
                             <Sparkles className="w-3.5 h-3.5" />
@@ -207,12 +247,17 @@ export default function HomePage() {
                     <p className="text-sm text-[#5B6B7B] max-w-sm leading-relaxed">
                         Salin kode kupon dan nikmati potongan harga langsung saat proses pembayaran tiket Anda.
                     </p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {promoList.map((promo) => (
-                        <div
+                    {promoList.map((promo, idx) => (
+                        <motion.div
                             key={promo.id}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-40px" }}
+                            transition={{ duration: 0.5, delay: idx * 0.1 }}
+                            whileHover={{ y: -6, scale: 1.015 }}
                             className="group relative rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-[#CBD5E1]/60 flex flex-col justify-between"
                         >
                             {/* Card Background Image with Gradient Overlay */}
@@ -220,7 +265,7 @@ export default function HomePage() {
                                 <img
                                     src={promo.image}
                                     alt={promo.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
                                     loading="lazy"
                                 />
                                 <div className={`absolute inset-0 bg-gradient-to-t ${promo.gradient} opacity-92 group-hover:opacity-88 transition-opacity`} />
@@ -255,10 +300,12 @@ export default function HomePage() {
                                         </span>
                                     </div>
 
-                                    <button
+                                    <motion.button
                                         type="button"
-                                        onClick={() => handleCopyVoucher(promo.code)}
-                                        className="px-4 py-2 bg-white text-[#0E2A47] hover:bg-[#F26A21] hover:text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer"
+                                        whileTap={{ scale: 0.92 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        onClick={(e) => handleCopyVoucher(promo.code, e)}
+                                        className="px-4 py-2 bg-white text-[#0E2A47] hover:bg-[#F26A21] hover:text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md transition-colors cursor-pointer"
                                     >
                                         {copiedCode === promo.code ? (
                                             <>
@@ -271,17 +318,31 @@ export default function HomePage() {
                                                 <span>Salin Kode</span>
                                             </>
                                         )}
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </section>
 
+            {/* Section Transition 2: Pesawat Menyapu Layar ke Destinasi Favorit */}
+            <FlightScrollSwipeTransition
+                direction="rtl"
+                title="Mendarat di Destinasi Impian Nusantara"
+                flightNumber="1T-202"
+                altitude="34.000 ft"
+            />
+
             {/* Section 2: Destinasi Wisata Populer Bergambar (Traveloka Style) */}
-            <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-16 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-12 w-full">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5 }}
+                    className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4"
+                >
                     <div>
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E2A47]/10 text-[#0E2A47] text-xs font-black uppercase tracking-wider mb-2">
                             <MapPin className="w-3.5 h-3.5 text-[#F26A21]" />
@@ -294,12 +355,17 @@ export default function HomePage() {
                     <p className="text-sm text-[#5B6B7B] max-w-sm leading-relaxed">
                         Penerbangan langsung dari Jakarta (CGK) dengan harga hemat ke surga liburan Nusantara.
                     </p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {POPULAR_DESTINATIONS.map((dest, idx) => (
-                        <div
+                        <motion.div
                             key={idx}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-40px" }}
+                            transition={{ duration: 0.5, delay: (idx % 3) * 0.1 }}
+                            whileHover={{ y: -6, scale: 1.015 }}
                             onClick={() => handleQuickDest(dest.iata)}
                             className="group bg-white rounded-3xl overflow-hidden border border-[#CBD5E1]/70 hover:border-[#F26A21] shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col"
                         >
@@ -355,15 +421,29 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </section>
 
+            {/* Section Transition 3: Pesawat Menyapu Layar ke Partner Maskapai */}
+            <FlightScrollSwipeTransition
+                direction="ltr"
+                title="Armada Resmi Berstandar Internasional"
+                flightNumber="1T-303"
+                altitude="39.000 ft"
+            />
+
             {/* Section 3: Maskapai Partner Resmi */}
             <section className="bg-white border-y border-[#CBD5E1]/60 py-16">
                 <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-                    <div className="text-center max-w-2xl mx-auto mb-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center max-w-2xl mx-auto mb-12"
+                    >
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E2A47]/10 text-[#0E2A47] text-xs font-black uppercase tracking-wider mb-2">
                             <Award className="w-3.5 h-3.5 text-[#F26A21]" />
                             Maskapai Terpercaya
@@ -374,12 +454,17 @@ export default function HomePage() {
                         <p className="text-sm text-[#5B6B7B] mt-2">
                             Terbang aman dengan armada resmi berstandar penerbangan internasional.
                         </p>
-                    </div>
+                    </motion.div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         {AIRLINE_PARTNERS.map((airline, idx) => (
-                            <div
+                            <motion.div
                                 key={idx}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.4, delay: idx * 0.08 }}
+                                whileHover={{ y: -4, scale: 1.02 }}
                                 className="p-5 rounded-2xl bg-[#F6F8FA] border border-[#CBD5E1]/60 hover:border-[#F26A21] hover:shadow-md transition-all flex flex-col justify-between"
                             >
                                 <div>
@@ -396,7 +481,7 @@ export default function HomePage() {
                                 <p className="text-[11px] text-[#5B6B7B] mt-3 pt-3 border-t border-[#E2E8F0]">
                                     {airline.note}
                                 </p>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
@@ -405,7 +490,14 @@ export default function HomePage() {
             {/* Section 4: Jaminan Layanan 1Tiket */}
             <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-16 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col">
+                    <motion.div
+                        initial={{ opacity: 0, y: 25 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.05 }}
+                        whileHover={{ y: -4 }}
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    >
                         <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
                             <ShieldCheck className="w-6 h-6 text-[#0E2A47]" />
                         </div>
@@ -415,9 +507,16 @@ export default function HomePage() {
                         <p className="text-xs text-[#5B6B7B] leading-relaxed">
                             Enkripsi transaksi resmi dan perlindungan privasi penumpang terjamin di setiap pemesanan.
                         </p>
-                    </div>
+                    </motion.div>
 
-                    <div className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col">
+                    <motion.div
+                        initial={{ opacity: 0, y: 25 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.15 }}
+                        whileHover={{ y: -4 }}
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    >
                         <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
                             <Zap className="w-6 h-6" />
                         </div>
@@ -427,9 +526,16 @@ export default function HomePage() {
                         <p className="text-xs text-[#5B6B7B] leading-relaxed">
                             Begitu pembayaran terverifikasi, e-ticket dan kode booking resmi langsung terbit hitungan detik.
                         </p>
-                    </div>
+                    </motion.div>
 
-                    <div className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col">
+                    <motion.div
+                        initial={{ opacity: 0, y: 25 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.25 }}
+                        whileHover={{ y: -4 }}
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    >
                         <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
                             <RefreshCw className="w-6 h-6 text-[#0E2A47]" />
                         </div>
@@ -439,9 +545,16 @@ export default function HomePage() {
                         <p className="text-xs text-[#5B6B7B] leading-relaxed">
                             Bisa ubah jadwal maupun pembatalan tiket dengan syarat transparan dan bantuan panduan cepat.
                         </p>
-                    </div>
+                    </motion.div>
 
-                    <div className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col">
+                    <motion.div
+                        initial={{ opacity: 0, y: 25 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.35 }}
+                        whileHover={{ y: -4 }}
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    >
                         <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
                             <Headphones className="w-6 h-6" />
                         </div>
@@ -451,7 +564,7 @@ export default function HomePage() {
                         <p className="text-xs text-[#5B6B7B] leading-relaxed">
                             Tim layanan pelanggan siap mendampingi kebutuhan informasi rute dan check-in online Anda.
                         </p>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
         </div>

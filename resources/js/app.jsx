@@ -23,13 +23,19 @@ import { ToastProvider } from './components/ui/Toast';
 
 import BottomNav from './components/BottomNav';
 
+import ScrollFlightProgress from './components/ScrollFlightProgress';
+import ScrollToTopPlane from './components/ScrollToTopPlane';
+
 function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
                 <BookingProvider>
                     <ToastProvider>
-                        <div className="flex flex-col min-h-screen bg-[#F6F8FA] text-[#0E2A47]">
+                        <div className="flex flex-col min-h-screen bg-[#F6F8FA] text-[#0E2A47] relative">
+                            {/* Scroll Flight Progress Bar at Top */}
+                            <ScrollFlightProgress />
+
                             <Navbar />
                             <main className="flex-1 pb-16 md:pb-0">
                                 <Routes>
@@ -48,6 +54,9 @@ function App() {
                             </main>
                             <Footer />
                             <BottomNav />
+
+                            {/* Floating Action Plane: Smooth Fly Back to Top */}
+                            <ScrollToTopPlane />
                         </div>
                     </ToastProvider>
                 </BookingProvider>
