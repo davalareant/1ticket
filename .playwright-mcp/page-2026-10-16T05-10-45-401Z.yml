@@ -1,0 +1,115 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "1 1Tiket Penerbangan Domestik" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: "1"
+        - generic [ref=e11]:
+          - generic [ref=e12]: 1Tiket
+          - generic [ref=e13]: Penerbangan Domestik
+      - navigation [ref=e14]:
+        - link "Cari Tiket" [ref=e15] [cursor=pointer]:
+          - /url: /
+        - link "Tiket Saya" [ref=e16] [cursor=pointer]:
+          - /url: /tiket-saya
+      - button "B Budi Santoso" [ref=e550] [cursor=pointer]:
+        - generic [ref=e551]: B
+        - generic [ref=e552]: Budi Santoso
+  - main [ref=e27]:
+    - generic [ref=e555]:
+      - generic [ref=e560]:
+        - generic [ref=e561]:
+          - generic [ref=e562]: "1"
+          - generic [ref=e563]: Penumpang
+        - generic [ref=e564]:
+          - generic [ref=e565]: "2"
+          - generic [ref=e566]: Pilih Kursi
+        - generic [ref=e567]:
+          - generic [ref=e568]: "3"
+          - generic [ref=e569]: Ringkasan
+        - generic [ref=e570]:
+          - generic [ref=e571]: "4"
+          - generic [ref=e572]: Pembayaran
+      - generic [ref=e574]:
+        - generic [ref=e576]:
+          - generic [ref=e577]:
+            - generic [ref=e583]:
+              - heading "Data Kontak Pemesan" [level=3] [ref=e584]
+              - paragraph [ref=e585]: E-ticket dan bukti pesanan akan dikirimkan ke kontak ini (terisi otomatis dari akun Anda).
+            - generic [ref=e586]:
+              - generic [ref=e587]:
+                - generic [ref=e588]: Nama Lengkap
+                - textbox [ref=e589]: Budi Santoso
+              - generic [ref=e590]:
+                - generic [ref=e591]: Alamat Email
+                - textbox [ref=e592]: demo@1tiket.test
+              - generic [ref=e593]:
+                - generic [ref=e594]: Nomor Telepon
+                - textbox [ref=e595]: "081234567890"
+          - generic [ref=e596]:
+            - generic [ref=e597]:
+              - generic [ref=e598]:
+                - generic [ref=e599]: "1"
+                - generic [ref=e600]:
+                  - heading "Data Penumpang 1" [level=3] [ref=e601]
+                  - paragraph [ref=e602]: Pastikan nama sesuai dengan KTP / Paspor
+              - generic [ref=e603]: Dewasa
+            - generic [ref=e604]:
+              - generic [ref=e605]:
+                - generic [ref=e606]: Gelar
+                - combobox [ref=e607] [cursor=pointer]:
+                  - option "Tn. (Tuan)" [selected]
+                  - option "Ny. (Nyonya)"
+                  - option "Nn. (Nona)"
+              - generic [ref=e608]:
+                - generic [ref=e609]: Nama Lengkap
+                - 'textbox "Contoh: Budi Santoso" [ref=e610]'
+              - generic [ref=e611]:
+                - generic [ref=e612]: No. KTP / Paspor
+                - textbox "16 digit NIK atau Paspor" [ref=e613]
+          - button "Lanjut ke Pemilihan Kursi" [ref=e615] [cursor=pointer]
+        - generic [ref=e620]:
+          - heading "Ringkasan Penerbangan" [level=3] [ref=e621]
+          - generic [ref=e622]:
+            - generic [ref=e623]:
+              - generic [ref=e624]: BW
+              - generic [ref=e625]: Bayu Wings (BW105)
+            - generic [ref=e626]:
+              - generic [ref=e627]:
+                - paragraph [ref=e628]: 19:30
+                - paragraph [ref=e629]: CGK
+              - generic [ref=e632]:
+                - paragraph [ref=e633]: 22:20
+                - paragraph [ref=e634]: DPS
+            - generic [ref=e635]:
+              - generic [ref=e636]: Jumlah Penumpang
+              - generic [ref=e637]: 1 Orang
+            - generic [ref=e638]:
+              - generic [ref=e639]: Tarif Satuan
+              - generic [ref=e640]: Rp 770.000
+  - contentinfo [ref=e232]:
+    - generic [ref=e233]:
+      - generic [ref=e234]:
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - generic [ref=e237]: "1"
+            - generic [ref=e238]: 1Tiket
+          - paragraph [ref=e239]: Aplikasi web pemesanan tiket pesawat satu arah di Indonesia. Dirancang dengan filosofi "Boarding pass di bawah langit" dan animasi bertema penerbangan.
+          - generic [ref=e240]: Proyek pembelajaran tugas web. Semua jadwal penerbangan dan pembayaran bersifat simulasi (dummy).
+        - generic [ref=e245]:
+          - heading "Rute Populer" [level=4] [ref=e246]
+          - list [ref=e247]:
+            - listitem [ref=e248]: Jakarta (CGK) → Bali (DPS)
+            - listitem [ref=e249]: Jakarta (CGK) → Medan (KNO)
+            - listitem [ref=e250]: Surabaya (SUB) → Makassar (UPG)
+            - listitem [ref=e251]: Jakarta (CGK) → Surabaya (SUB)
+            - listitem [ref=e252]: Bali (DPS) → Lombok (LOP)
+        - generic [ref=e253]:
+          - heading "Akun Demo Penguji" [level=4] [ref=e254]
+          - generic [ref=e255]:
+            - paragraph [ref=e256]: "Email: demo@1tiket.test"
+            - paragraph [ref=e257]: "Password: password"
+            - paragraph [ref=e258]: Bisa digunakan langsung untuk menguji seluruh alur pemesanan.
+      - generic [ref=e259]:
+        - paragraph [ref=e260]: © 2026 1Tiket — Boarding Pass di Bawah Langit. Tugas Pemrograman Web.
+        - paragraph [ref=e261]: Ditenagai oleh Laravel + React Vite + MySQL

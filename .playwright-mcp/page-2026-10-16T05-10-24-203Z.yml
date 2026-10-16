@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "1 1Tiket Penerbangan Domestik" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: "1"
+        - generic [ref=e11]:
+          - generic [ref=e12]: 1Tiket
+          - generic [ref=e13]: Penerbangan Domestik
+      - navigation [ref=e14]:
+        - link "Cari Tiket" [ref=e15] [cursor=pointer]:
+          - /url: /
+        - link "Tiket Saya" [ref=e16] [cursor=pointer]:
+          - /url: /tiket-saya
+      - generic [ref=e19]:
+        - button "Akun Demo" [ref=e20] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "Masuk" [ref=e25] [cursor=pointer]:
+            - /url: /masuk
+          - link "Daftar" [ref=e26] [cursor=pointer]:
+            - /url: /daftar
+  - main [ref=e27]:
+    - generic [ref=e512]:
+      - generic [ref=e513]:
+        - generic [ref=e514]: "1"
+        - heading "Masuk ke 1Tiket" [level=2] [ref=e516]
+        - paragraph [ref=e517]: Lanjutkan pesanan tiket pesawat Anda dengan mudah
+      - generic [ref=e518]:
+        - generic [ref=e519]: "Uji coba alur untuk dosen / penguji tugas:"
+        - button "Masuk Langsung dengan Akun Demo" [ref=e520] [cursor=pointer]
+        - generic [ref=e525]: demo@1tiket.test / password
+      - generic [ref=e526]: Atau Email Anda
+      - generic [ref=e529]:
+        - generic [ref=e530]:
+          - generic [ref=e531]: Alamat Email
+          - textbox "nama@email.com" [ref=e536]
+        - generic [ref=e537]:
+          - generic [ref=e538]: Kata Sandi
+          - textbox "••••••••" [ref=e543]
+        - button "Masuk Sekarang" [ref=e544] [cursor=pointer]
+      - paragraph [ref=e548]:
+        - text: Belum punya akun?
+        - link "Daftar di sini" [ref=e549] [cursor=pointer]:
+          - /url: /daftar?redirect=%2Fpesan%2Fpenumpang
+  - contentinfo [ref=e232]:
+    - generic [ref=e233]:
+      - generic [ref=e234]:
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - generic [ref=e237]: "1"
+            - generic [ref=e238]: 1Tiket
+          - paragraph [ref=e239]: Aplikasi web pemesanan tiket pesawat satu arah di Indonesia. Dirancang dengan filosofi "Boarding pass di bawah langit" dan animasi bertema penerbangan.
+          - generic [ref=e240]: Proyek pembelajaran tugas web. Semua jadwal penerbangan dan pembayaran bersifat simulasi (dummy).
+        - generic [ref=e245]:
+          - heading "Rute Populer" [level=4] [ref=e246]
+          - list [ref=e247]:
+            - listitem [ref=e248]: Jakarta (CGK) → Bali (DPS)
+            - listitem [ref=e249]: Jakarta (CGK) → Medan (KNO)
+            - listitem [ref=e250]: Surabaya (SUB) → Makassar (UPG)
+            - listitem [ref=e251]: Jakarta (CGK) → Surabaya (SUB)
+            - listitem [ref=e252]: Bali (DPS) → Lombok (LOP)
+        - generic [ref=e253]:
+          - heading "Akun Demo Penguji" [level=4] [ref=e254]
+          - generic [ref=e255]:
+            - paragraph [ref=e256]: "Email: demo@1tiket.test"
+            - paragraph [ref=e257]: "Password: password"
+            - paragraph [ref=e258]: Bisa digunakan langsung untuk menguji seluruh alur pemesanan.
+      - generic [ref=e259]:
+        - paragraph [ref=e260]: © 2026 1Tiket — Boarding Pass di Bawah Langit. Tugas Pemrograman Web.
+        - paragraph [ref=e261]: Ditenagai oleh Laravel + React Vite + MySQL

@@ -1,0 +1,116 @@
+- generic [ref=f1e3]:
+  - banner [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - link "1 1Tiket Penerbangan Domestik" [ref=f1e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e7]: "1"
+        - generic [ref=f1e11]:
+          - generic [ref=f1e12]: 1Tiket
+          - generic [ref=f1e13]: Penerbangan Domestik
+      - navigation [ref=f1e14]:
+        - link "Cari Tiket" [ref=f1e15] [cursor=pointer]:
+          - /url: /
+        - link "Tiket Saya" [ref=f1e16] [cursor=pointer]:
+          - /url: /tiket-saya
+      - button "B Budi Santoso" [ref=f1e264] [cursor=pointer]:
+        - generic [ref=f1e265]: B
+        - generic [ref=f1e266]: Budi Santoso
+  - main [ref=f1e27]:
+    - generic [ref=f1e861]:
+      - generic [ref=f1e867]:
+        - generic [ref=f1e868]: Penumpang
+        - generic [ref=f1e873]: Pilih Kursi
+        - generic [ref=f1e878]:
+          - generic [ref=f1e879]: "3"
+          - generic [ref=f1e880]: Ringkasan
+        - generic [ref=f1e881]:
+          - generic [ref=f1e882]: "4"
+          - generic [ref=f1e883]: Pembayaran
+      - generic [ref=f1e884]:
+        - generic [ref=f1e885]:
+          - button "Kembali ke Pilih Kursi" [ref=f1e886] [cursor=pointer]
+          - generic [ref=f1e889]: Langkah 3 dari 4
+        - generic [ref=f1e890]:
+          - generic [ref=f1e891]:
+            - generic [ref=f1e892]:
+              - generic [ref=f1e893]:
+                - generic [ref=f1e894]: BW
+                - generic [ref=f1e895]:
+                  - heading "Bayu Wings" [level=3] [ref=f1e896]
+                  - paragraph [ref=f1e897]: BW105 • Kelas Ekonomi
+              - generic [ref=f1e898]: Penerbangan Langsung
+            - generic [ref=f1e899]:
+              - generic [ref=f1e900]:
+                - text: 19:30
+                - paragraph [ref=f1e901]: CGK
+                - paragraph [ref=f1e902]: Jakarta
+              - generic [ref=f1e903]: 1j 50m
+              - generic [ref=f1e908]:
+                - text: 22:20
+                - paragraph [ref=f1e909]: DPS
+                - paragraph [ref=f1e910]: Denpasar (Bali)
+          - generic [ref=f1e911]:
+            - generic [ref=f1e912]:
+              - heading "Daftar Penumpang (1)" [level=4] [ref=f1e913]
+              - generic [ref=f1e918]:
+                - generic [ref=f1e919]:
+                  - paragraph [ref=f1e920]: Tn. Budi Santoso
+                  - paragraph [ref=f1e921]: "ID: 3171012345670001"
+                - generic [ref=f1e922]:
+                  - generic [ref=f1e923]: Kursi
+                  - text: 7F
+            - generic [ref=f1e924]:
+              - heading "Data Kontak Pemesan" [level=4] [ref=f1e925]
+              - generic [ref=f1e929]:
+                - generic [ref=f1e930]:
+                  - text: "Nama Pemesan:"
+                  - paragraph [ref=f1e931]: Budi Santoso
+                - generic [ref=f1e932]:
+                  - text: "Email:"
+                  - paragraph [ref=f1e933]: demo@1tiket.test
+                - generic [ref=f1e934]:
+                  - text: "Nomor Telepon:"
+                  - paragraph [ref=f1e935]: "081234567890"
+          - generic [ref=f1e936]:
+            - heading "Rincian Pembayaran" [level=4] [ref=f1e937]
+            - generic [ref=f1e938]:
+              - generic [ref=f1e939]:
+                - generic [ref=f1e940]: Tarif Tiket (1 Penumpang × Rp 770.000)
+                - generic [ref=f1e941]: Rp 770.000
+              - generic [ref=f1e942]:
+                - generic [ref=f1e943]: Biaya Layanan & Pajak Bandara
+                - generic [ref=f1e944]: Rp 5.000
+              - generic [ref=f1e945]:
+                - generic [ref=f1e946]: Total Pembayaran
+                - generic [ref=f1e947]: Rp 775.000
+            - paragraph [ref=f1e952]:
+              - text: Setelah menekan tombol di bawah, kursi Anda akan
+              - strong [ref=f1e953]: ditahan selama 15 menit
+              - text: untuk menyelesaikan pembayaran.
+            - button "Lanjut ke Pembayaran" [ref=f1e955] [cursor=pointer]
+  - contentinfo [ref=f1e232]:
+    - generic [ref=f1e233]:
+      - generic [ref=f1e234]:
+        - generic [ref=f1e235]:
+          - generic [ref=f1e236]:
+            - generic [ref=f1e237]: "1"
+            - generic [ref=f1e238]: 1Tiket
+          - paragraph [ref=f1e239]: Aplikasi web pemesanan tiket pesawat satu arah di Indonesia. Dirancang dengan filosofi "Boarding pass di bawah langit" dan animasi bertema penerbangan.
+          - generic [ref=f1e240]: Proyek pembelajaran tugas web. Semua jadwal penerbangan dan pembayaran bersifat simulasi (dummy).
+        - generic [ref=f1e245]:
+          - heading "Rute Populer" [level=4] [ref=f1e246]
+          - list [ref=f1e247]:
+            - listitem [ref=f1e248]: Jakarta (CGK) → Bali (DPS)
+            - listitem [ref=f1e249]: Jakarta (CGK) → Medan (KNO)
+            - listitem [ref=f1e250]: Surabaya (SUB) → Makassar (UPG)
+            - listitem [ref=f1e251]: Jakarta (CGK) → Surabaya (SUB)
+            - listitem [ref=f1e252]: Bali (DPS) → Lombok (LOP)
+        - generic [ref=f1e253]:
+          - heading "Akun Demo Penguji" [level=4] [ref=f1e254]
+          - generic [ref=f1e255]:
+            - paragraph [ref=f1e256]: "Email: demo@1tiket.test"
+            - paragraph [ref=f1e257]: "Password: password"
+            - paragraph [ref=f1e258]: Bisa digunakan langsung untuk menguji seluruh alur pemesanan.
+      - generic [ref=f1e259]:
+        - paragraph [ref=f1e260]: © 2026 1Tiket — Boarding Pass di Bawah Langit. Tugas Pemrograman Web.
+        - paragraph [ref=f1e261]: Ditenagai oleh Laravel + React Vite + MySQL

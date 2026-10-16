@@ -1,0 +1,179 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "1 1Tiket Penerbangan Domestik" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: "1"
+        - generic [ref=e11]:
+          - generic [ref=e12]: 1Tiket
+          - generic [ref=e13]: Penerbangan Domestik
+      - navigation [ref=e14]:
+        - link "Cari Tiket" [ref=e15] [cursor=pointer]:
+          - /url: /
+        - link "Tiket Saya" [ref=e16] [cursor=pointer]:
+          - /url: /tiket-saya
+      - generic [ref=e19]:
+        - button "Akun Demo" [ref=e20] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "Masuk" [ref=e25] [cursor=pointer]:
+            - /url: /masuk
+          - link "Daftar" [ref=e26] [cursor=pointer]:
+            - /url: /daftar
+  - main [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Terbang Jelajah Nusantara dengan Satu Tiket
+        - heading "Boarding Pass di Bawah Langit Indonesia" [level=1] [ref=e36]
+        - paragraph [ref=e37]: Cari jadwal terbaik antar kota, pilih kursi favorit langsung di kabin pesawat, dan rasakan pengalaman e-ticket instan yang memikat.
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Dari (Asal)
+            - button "CGK Pilih bandara" [ref=e46] [cursor=pointer]:
+              - generic [ref=e47]:
+                - generic [ref=e48]: CGK
+                - generic [ref=e49]: Pilih bandara
+          - button "Tukar bandara asal dan tujuan" [ref=e54] [cursor=pointer]
+          - generic [ref=e58]:
+            - generic [ref=e59]: Ke (Tujuan)
+            - button "DPS Pilih bandara" [ref=e62] [cursor=pointer]:
+              - generic [ref=e63]:
+                - generic [ref=e64]: DPS
+                - generic [ref=e65]: Pilih bandara
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]: Tanggal Berangkat
+            - textbox [ref=e74] [cursor=pointer]: 2026-10-17
+          - generic [ref=e75]:
+            - generic [ref=e76]: Penumpang (1-5)
+            - combobox [ref=e82] [cursor=pointer]:
+              - option "1 Penumpang" [selected]
+              - option "2 Penumpang"
+              - option "3 Penumpang"
+              - option "4 Penumpang"
+              - option "5 Penumpang"
+          - generic [ref=e83]:
+            - generic [ref=e84]: Kelas Kabin
+            - combobox [ref=e88] [cursor=pointer]:
+              - option "Ekonomi" [selected]
+              - option "Bisnis"
+          - button "Cari Penerbangan" [ref=e90] [cursor=pointer]
+      - generic [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - text: Inspirasi Liburan
+            - heading "Rute Penerbangan Terpopuler" [level=2] [ref=e98]
+          - paragraph [ref=e99]: Jadwal terpadat dengan tarif terbaik untuk penerbangan satu arah favorit Anda.
+        - generic [ref=e100]:
+          - generic [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 1j 50m Langsung
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e109]: CGK
+                - text: Jakarta
+              - generic [ref=e114]:
+                - generic [ref=e115]: DPS
+                - text: Bali (Denpasar)
+            - generic [ref=e116]:
+              - generic [ref=e117]: Mulai dari
+              - generic [ref=e118]: Rp 850.000
+          - generic [ref=e119] [cursor=pointer]:
+            - generic [ref=e120]: 2j 15m Langsung
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - generic [ref=e127]: CGK
+                - text: Jakarta
+              - generic [ref=e132]:
+                - generic [ref=e133]: KNO
+                - text: Medan
+            - generic [ref=e134]:
+              - generic [ref=e135]: Mulai dari
+              - generic [ref=e136]: Rp 1.100.000
+          - generic [ref=e137] [cursor=pointer]:
+            - generic [ref=e138]: 1j 35m Langsung
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - generic [ref=e145]: SUB
+                - text: Surabaya
+              - generic [ref=e150]:
+                - generic [ref=e151]: UPG
+                - text: Makassar
+            - generic [ref=e152]:
+              - generic [ref=e153]: Mulai dari
+              - generic [ref=e154]: Rp 890.000
+          - generic [ref=e155] [cursor=pointer]:
+            - generic [ref=e156]: 1j 30m Langsung
+            - generic [ref=e161]:
+              - generic [ref=e162]:
+                - generic [ref=e163]: CGK
+                - text: Jakarta
+              - generic [ref=e168]:
+                - generic [ref=e169]: SUB
+                - text: Surabaya
+            - generic [ref=e170]:
+              - generic [ref=e171]: Mulai dari
+              - generic [ref=e172]: Rp 750.000
+          - generic [ref=e173] [cursor=pointer]:
+            - generic [ref=e174]: 40m Langsung
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - generic [ref=e181]: DPS
+                - text: Bali
+              - generic [ref=e186]:
+                - generic [ref=e187]: LOP
+                - text: Lombok
+            - generic [ref=e188]:
+              - generic [ref=e189]: Mulai dari
+              - generic [ref=e190]: Rp 380.000
+          - generic [ref=e191] [cursor=pointer]:
+            - generic [ref=e192]: 1j 10m Langsung
+            - generic [ref=e197]:
+              - generic [ref=e198]:
+                - generic [ref=e199]: CGK
+                - text: Jakarta
+              - generic [ref=e204]:
+                - generic [ref=e205]: JOG
+                - text: Yogyakarta
+            - generic [ref=e206]:
+              - generic [ref=e207]: Mulai dari
+              - generic [ref=e208]: Rp 620.000
+      - generic [ref=e210]:
+        - generic [ref=e211]:
+          - text: Pengalaman Berbeda
+          - heading "Dirancang Khusus untuk Kemudahan Anda" [level=2] [ref=e212]
+        - generic [ref=e213]:
+          - generic [ref=e214]:
+            - heading "Boarding Pass Digital Realistis" [level=3] [ref=e218]
+            - paragraph [ref=e219]: E-ticket bergaya boarding pass dengan perforasi stub yang dapat diunduh atau dicetak seketika setelah pembayaran.
+          - generic [ref=e220]:
+            - heading "Denah Kabin Interaktif" [level=3] [ref=e224]
+            - paragraph [ref=e225]: "Pilih kursi langsung di denah pesawat: konfigurasi 2-2 untuk Bisnis dan 3-3 untuk Ekonomi dengan animasi pop real-time."
+          - generic [ref=e226]:
+            - heading "Simulasi Pembayaran Terlengkap" [level=3] [ref=e230]
+            - paragraph [ref=e231]: Uji alur pembayaran instan dengan simulasi QRIS bergaris pindai, E-Wallet, dan Virtual Account tanpa biaya nyata.
+  - contentinfo [ref=e232]:
+    - generic [ref=e233]:
+      - generic [ref=e234]:
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - generic [ref=e237]: "1"
+            - generic [ref=e238]: 1Tiket
+          - paragraph [ref=e239]: Aplikasi web pemesanan tiket pesawat satu arah di Indonesia. Dirancang dengan filosofi "Boarding pass di bawah langit" dan animasi bertema penerbangan.
+          - generic [ref=e240]: Proyek pembelajaran tugas web. Semua jadwal penerbangan dan pembayaran bersifat simulasi (dummy).
+        - generic [ref=e245]:
+          - heading "Rute Populer" [level=4] [ref=e246]
+          - list [ref=e247]:
+            - listitem [ref=e248]: Jakarta (CGK) → Bali (DPS)
+            - listitem [ref=e249]: Jakarta (CGK) → Medan (KNO)
+            - listitem [ref=e250]: Surabaya (SUB) → Makassar (UPG)
+            - listitem [ref=e251]: Jakarta (CGK) → Surabaya (SUB)
+            - listitem [ref=e252]: Bali (DPS) → Lombok (LOP)
+        - generic [ref=e253]:
+          - heading "Akun Demo Penguji" [level=4] [ref=e254]
+          - generic [ref=e255]:
+            - paragraph [ref=e256]: "Email: demo@1tiket.test"
+            - paragraph [ref=e257]: "Password: password"
+            - paragraph [ref=e258]: Bisa digunakan langsung untuk menguji seluruh alur pemesanan.
+      - generic [ref=e259]:
+        - paragraph [ref=e260]: © 2026 1Tiket — Boarding Pass di Bawah Langit. Tugas Pemrograman Web.
+        - paragraph [ref=e261]: Ditenagai oleh Laravel + React Vite + MySQL

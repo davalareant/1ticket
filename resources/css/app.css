@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.{js,jsx,ts,tsx}';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --color-tinta: #0E2A47;
+    --color-langit: #CFE5F5;
+    --color-kertas: #F6F8FA;
+    --color-sinyal: #F26A21;
+    --color-landasan: #5B6B7B;
+}
+
+/* Custom Boarding Pass & Aviation Styling */
+.ticket-notch-left {
+    position: relative;
+}
+.ticket-notch-left::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: #F6F8FA;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.ticket-notch-right {
+    position: relative;
+}
+.ticket-notch-right::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: #F6F8FA;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.perforated-line {
+    background-image: linear-gradient(to bottom, #5B6B7B 50%, rgba(255, 255, 255, 0) 0%);
+    background-position: right;
+    background-size: 2px 10px;
+    background-repeat: repeat-y;
+}
+
+.perforated-line-h {
+    background-image: linear-gradient(to right, #CBD5E1 50%, rgba(255, 255, 255, 0) 0%);
+    background-position: bottom;
+    background-size: 10px 2px;
+    background-repeat: repeat-x;
+}
+
+/* Flight Path SVG Stroke Animation */
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.animate-flight-path {
+    stroke-dasharray: 8, 6;
+    stroke-dashoffset: 200;
+    animation: dash 3s linear infinite;
+}
+
+/* QR Scanner Line Animation (N13) */
+@keyframes qrScan {
+    0% {
+        top: 0%;
+        opacity: 0.8;
+    }
+    50% {
+        top: 90%;
+        opacity: 1;
+    }
+    100% {
+        top: 0%;
+        opacity: 0.8;
+    }
+}
+
+.animate-qr-scan {
+    animation: qrScan 2.5s ease-in-out infinite;
+}
+
+/* Cloud Floating Animation (N2) */
+@keyframes floatCloud {
+    0% {
+        transform: translateX(-5%);
+    }
+    50% {
+        transform: translateX(5%);
+    }
+    100% {
+        transform: translateX(-5%);
+    }
+}
+
+.animate-cloud-slow {
+    animation: floatCloud 24s ease-in-out infinite;
+}
+
+.animate-cloud-medium {
+    animation: floatCloud 16s ease-in-out infinite reverse;
+}
+
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

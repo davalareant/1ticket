@@ -1,0 +1,215 @@
+  // =====================================================================
+  // 1Tiket - Skema database (tiket pesawat satu arah, versi sederhana)
+  // Tempel ke https://dbdiagram.io/d untuk melihat diagramnya.
+  // Catatan: tabel bawaan Laravel (migrations, personal_access_tokens,
+  // sessions, cache, jobs, dll.) tidak ditulis di sini.
+  // Nilai uang disimpan sebagai integer dalam Rupiah (tanpa desimal).
+  // Waktu penerbangan disimpan dalam UTC, ditampilkan sesuai zona bandara.
+  // =====================================================================
+
+  Project satu_tiket {
+    database_type: 'MySQL'
+    Note: 'Skema 1Tiket: pemesanan tiket pesawat satu arah dengan pembayaran dummy'
+  }
+
+  // ---------------------------------------------------------------------
+  // ENUM
+  // ---------------------------------------------------------------------
+
+  Enum cabin_class {
+    economy
+    business
+  }
+
+  Enum booking_status {
+    pending_payment [note: 'Dibuat, kursi ditahan, menunggu bayar']
+    paid            [note: 'Pembayaran berhasil, tiket terbit']
+    expired         [note: 'Lewat batas waktu bayar, kursi dilepas']
+    cancelled       [note: 'Dibatalkan pengguna sebelum bayar']
+  }
+
+  Enum payment_status {
+    pending [note: 'Menunggu pengguna menyelesaikan pembayaran']
+    success [note: 'Disimulasikan berhasil']
+    failed  [note: 'Disimulasikan gagal']
+    expired [note: 'Lewat batas waktu']
+  }
+
+  Enum payment_method_type {
+    qris
+    ewallet
+    bank_transfer
+  }
+
+  // ---------------------------------------------------------------------
+  // AKUN
+  // ---------------------------------------------------------------------
+
+  Table users {
+    id         bigint       [pk, increment]
+    name       varchar(100) [not null]
+    email      varchar(150) [not null, unique]
+    phone      varchar(20)
+    password   varchar(255) [not null, note: 'Hash bcrypt']
+    created_at timestamp
+    updated_at timestamp
+
+    Note: 'Akun penumpang. Satu-satunya jenis pengguna (tidak ada admin).'
+  }
+
+  // ---------------------------------------------------------------------
+  // DATA MASTER PENERBANGAN
+  // ---------------------------------------------------------------------
+
+  Table airports {
+    id        bigint       [pk, increment]
+    iata_code char(3)      [not null, unique, note: 'Contoh: CGK, DPS, SUB']
+    name      varchar(150) [not null, note: 'Nama bandara lengkap']
+    city      varchar(100) [not null]
+    timezone  varchar(40)  [not null, default: 'Asia/Jakarta', note: 'Asia/Jakarta (WIB), Asia/Makassar (WITA), Asia/Jayapura (WIT)']
+    latitude  decimal(9,6) [not null, note: 'Untuk animasi peta rute']
+    longitude decimal(9,6) [not null, note: 'Untuk animasi peta rute']
+
+    Note: 'Daftar bandara. Dipakai untuk autocomplete, rute, zona waktu, dan peta animasi.'
+  }
+
+  Table airlines {
+    id          bigint      [pk, increment]
+    code        varchar(3)  [not null, unique, note: 'Kode maskapai, contoh: NA']
+    name        varchar(100) [not null, note: 'Nama fiktif untuk keperluan tugas']
+    brand_color varchar(7)  [not null, default: '#0E2A47', note: 'Warna hex untuk tampilan kartu']
+
+    Note: 'Daftar maskapai (fiktif).'
+  }
+
+  Table flights {
+    id                     bigint      [pk, increment]
+    airline_id             bigint      [not null]
+    flight_number          varchar(10) [not null, note: 'Contoh: NA201']
+    origin_airport_id      bigint      [not null]
+    destination_airport_id bigint      [not null]
+    departure_at           datetime    [not null, note: 'UTC']
+    arrival_at             datetime    [not null, note: 'UTC']
+    created_at             timestamp
+    updated_at             timestamp
+
+    indexes {
+      (origin_airport_id, destination_airport_id, departure_at) [name: 'idx_flights_search']
+      (airline_id, flight_number, departure_at) [unique, name: 'uq_flights_schedule']
+    }
+
+    Note: 'Satu baris = satu jadwal penerbangan pada satu tanggal dan jam tertentu. Dibangkitkan oleh seeder.'
+  }
+
+  Table flight_fares {
+    id          bigint      [pk, increment]
+    flight_id   bigint      [not null]
+    cabin_class cabin_class [not null]
+    price       integer     [not null, note: 'Harga per penumpang (Rp)']
+    seats_total smallint    [not null, note: 'Kapasitas kursi kelas ini']
+
+    indexes {
+      (flight_id, cabin_class) [unique, name: 'uq_fare_per_cabin']
+    }
+
+    Note: 'Harga dan kapasitas per kelas kabin untuk satu penerbangan. Sisa kursi dihitung, bukan disimpan.'
+  }
+
+  // ---------------------------------------------------------------------
+  // PEMESANAN
+  // ---------------------------------------------------------------------
+
+  Table bookings {
+    id              bigint         [pk, increment]
+    booking_code    varchar(8)     [not null, unique, note: 'Kode pesanan tampil ke pengguna, contoh: 1T8K2QZ']
+    user_id         bigint         [not null]
+    flight_id       bigint         [not null]
+    cabin_class     cabin_class    [not null]
+    passenger_count tinyint        [not null, note: '1 sampai 5']
+    unit_price      integer        [not null, note: 'Snapshot harga per penumpang saat dipesan']
+    admin_fee       integer        [not null, default: 5000]
+    total_amount    integer        [not null, note: 'unit_price x passenger_count + admin_fee']
+    contact_name    varchar(100)   [not null]
+    contact_email   varchar(150)   [not null]
+    contact_phone   varchar(20)    [not null]
+    status          booking_status [not null, default: 'pending_payment']
+    expires_at      datetime       [not null, note: 'Batas bayar: waktu dibuat + 15 menit']
+    paid_at         datetime
+    created_at      timestamp
+    updated_at      timestamp
+
+    indexes {
+      (user_id, created_at) [name: 'idx_bookings_user']
+      (flight_id, status) [name: 'idx_bookings_flight_status']
+    }
+
+    Note: 'Satu pesanan = satu penerbangan, satu kelas, 1-5 penumpang.'
+  }
+
+  Table booking_passengers {
+    id            bigint      [pk, increment]
+    booking_id    bigint      [not null]
+    title         varchar(10) [not null, note: 'Tn / Ny / Nn']
+    full_name     varchar(100) [not null, note: 'Sesuai identitas']
+    id_number     varchar(20) [not null, note: 'NIK atau nomor paspor (dummy)']
+    seat_number   varchar(4)  [note: 'Contoh: 12A. Kosong jika belum dipilih']
+    ticket_number varchar(16) [unique, note: 'Terisi saat pesanan paid. Contoh: 1T-0000123456']
+    created_at    timestamp
+    updated_at    timestamp
+
+    indexes {
+      booking_id [name: 'idx_passengers_booking']
+    }
+
+    Note: 'Penumpang pada pesanan. Satu penumpang = satu kursi = satu e-ticket.'
+  }
+
+  // ---------------------------------------------------------------------
+  // PEMBAYARAN (DUMMY)
+  // ---------------------------------------------------------------------
+
+  Table payment_methods {
+    id         bigint              [pk, increment]
+    code       varchar(30)         [not null, unique, note: 'qris, gopay, ovo, dana, shopeepay, bca_va, bni_va, bri_va, mandiri_va']
+    name       varchar(60)         [not null, note: 'Nama tampilan']
+    type       payment_method_type [not null]
+    is_active  boolean             [not null, default: true]
+    sort_order smallint            [not null, default: 0]
+
+    Note: 'Daftar metode bayar dummy: QRIS, e-wallet, dan transfer bank (virtual account).'
+  }
+
+  Table payments {
+    id                bigint         [pk, increment]
+    booking_id        bigint         [not null]
+    payment_method_id bigint         [not null]
+    reference_code    varchar(40)    [not null, unique, note: 'Nomor VA / ID transaksi / isi QR dummy']
+    amount            integer        [not null, note: 'Sama dengan bookings.total_amount']
+    status            payment_status [not null, default: 'pending']
+    expires_at        datetime       [not null]
+    paid_at           datetime
+    created_at        timestamp
+    updated_at        timestamp
+
+    indexes {
+      (booking_id, status) [name: 'idx_payments_booking']
+    }
+
+    Note: 'Satu percobaan pembayaran. Satu pesanan boleh punya beberapa percobaan jika yang sebelumnya gagal.'
+  }
+
+  // ---------------------------------------------------------------------
+  // RELASI
+  // ---------------------------------------------------------------------
+
+  Ref: flights.airline_id > airlines.id
+  Ref: flights.origin_airport_id > airports.id
+  Ref: flights.destination_airport_id > airports.id
+  Ref: flight_fares.flight_id > flights.id [delete: cascade]
+
+  Ref: bookings.user_id > users.id
+  Ref: bookings.flight_id > flights.id
+  Ref: booking_passengers.booking_id > bookings.id [delete: cascade]
+
+  Ref: payments.booking_id > bookings.id
+  Ref: payments.payment_method_id > payment_methods.id
