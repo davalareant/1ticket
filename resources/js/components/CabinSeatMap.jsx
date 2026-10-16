@@ -91,12 +91,12 @@ export default function CabinSeatMap({
                 })}
             </div>
 
-            {/* Airplane Fuselage / Cabin Container with Smooth Horizontal Scroll on Mobile */}
+            {/* Airplane Fuselage / Cabin Container with Smooth Horizontal Scroll on Mobile and Wide Desktop View */}
             <div className="w-full overflow-x-auto py-6 flex justify-center">
-                <div className="min-w-[340px] max-w-lg w-full bg-[#F6F8FA] border-2 border-[#CBD5E1] rounded-[40px] p-5 sm:p-8 shadow-inner relative">
+                <div className="min-w-[340px] max-w-lg md:max-w-2xl lg:max-w-3xl w-full bg-[#F6F8FA] border-2 border-[#CBD5E1] rounded-[40px] p-5 sm:p-8 md:p-10 shadow-inner relative">
                     {/* Cockpit Curve at the top */}
-                    <div className="w-28 h-9 bg-[#CFE5F5] rounded-t-full mx-auto -mt-10 sm:-mt-12 mb-6 border-t-2 border-x-2 border-[#CBD5E1] flex items-center justify-center shadow-xs">
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-[#0E2A47]">Depan Kabin</span>
+                    <div className="w-36 h-10 bg-[#CFE5F5] rounded-t-full mx-auto -mt-10 sm:-mt-12 md:-mt-14 mb-8 border-t-2 border-x-2 border-[#CBD5E1] flex items-center justify-center shadow-xs">
+                        <span className="text-xs uppercase font-bold tracking-widest text-[#0E2A47]">Depan Kabin</span>
                     </div>
 
                     {/* Column Headers */}

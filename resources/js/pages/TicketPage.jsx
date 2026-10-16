@@ -45,8 +45,8 @@ export default function TicketPage() {
     return (
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
             {/* Header Banner */}
-            <div className="bg-[#0E2A47] text-white py-10 print:hidden border-b border-white/10">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="bg-[#0E2A47] text-white py-12 print:hidden border-b border-white/10">
+                <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -55,10 +55,10 @@ export default function TicketPage() {
                         <CheckCircle className="w-8 h-8" />
                     </motion.div>
 
-                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
                         E-Ticket & Boarding Pass Berhasil Diterbitkan!
                     </h1>
-                    <p className="text-sm text-[#CFE5F5]/80 mt-1 max-w-lg mx-auto">
+                    <p className="text-sm text-[#CFE5F5]/80 mt-2 max-w-lg mx-auto leading-relaxed">
                         Kode Booking: <strong className="font-mono text-white text-base">{booking.booking_code}</strong>. Simpan atau cetak boarding pass di bawah ini sebelum keberangkatan.
                     </p>
 
@@ -87,9 +87,9 @@ export default function TicketPage() {
             </div>
 
             {/* Boarding Passes (Printer Ejection Animation N15) */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+            <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 pt-10">
                 {/* Printer Slot Graphic Header (N15) */}
-                <div className="max-w-md mx-auto h-3 bg-[#0E2A47] rounded-full shadow-inner mb-6 print:hidden" />
+                <div className="max-w-lg mx-auto h-3.5 bg-[#0E2A47] rounded-full shadow-inner mb-8 print:hidden" />
 
                 <div className="space-y-6">
                     {booking.passengers?.map((passenger, idx) => (

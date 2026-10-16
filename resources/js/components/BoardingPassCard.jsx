@@ -38,7 +38,7 @@ export default function BoardingPassCard({ booking, passenger, index = 0 }) {
                 delay: index * 0.2,
                 ease: [0.16, 1, 0.3, 1],
             }}
-            className="w-full max-w-4xl mx-auto my-6 bg-white rounded-3xl shadow-xl border border-[#CBD5E1] overflow-hidden flex flex-col md:flex-row relative print:shadow-none print:border-black"
+            className="w-full max-w-[1200px] mx-auto my-6 bg-white rounded-3xl shadow-xl border border-[#CBD5E1] overflow-hidden flex flex-col md:flex-row relative print:shadow-none print:border-black"
         >
             {/* Top/Left Boarding Pass Header Strip */}
             <div

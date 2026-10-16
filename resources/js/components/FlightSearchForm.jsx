@@ -110,7 +110,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
     };
 
     return (
-        <div className="bg-white rounded-3xl shadow-xl border border-[#CBD5E1]/60 p-6 sm:p-8 max-w-5xl mx-auto -mt-10 relative z-20">
+        <div className="bg-white rounded-3xl shadow-xl border border-[#CBD5E1]/60 p-6 sm:p-8 w-full max-w-[1360px] mx-auto -mt-12 relative z-20">
             {error && (
                 <div className="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold rounded-xl flex items-center gap-2">
                     <span>⚠️ {error}</span>
