@@ -46,6 +46,14 @@ class FlightSeeder extends Seeder
             ['origin' => 'DPS', 'dest' => 'SUB', 'duration' => 55,  'base_eco' => 490000, 'daily' => 3],
             ['origin' => 'DPS', 'dest' => 'LOP', 'duration' => 40,  'base_eco' => 380000, 'daily' => 2],
             ['origin' => 'LOP', 'dest' => 'DPS', 'duration' => 40,  'base_eco' => 380000, 'daily' => 2],
+            ['origin' => 'CGK', 'dest' => 'LOP', 'duration' => 120, 'base_eco' => 780000, 'daily' => 3],
+            ['origin' => 'LOP', 'dest' => 'CGK', 'duration' => 120, 'base_eco' => 780000, 'daily' => 3],
+            ['origin' => 'CGK', 'dest' => 'YIA', 'duration' => 70,  'base_eco' => 620000, 'daily' => 3],
+            ['origin' => 'YIA', 'dest' => 'CGK', 'duration' => 70,  'base_eco' => 620000, 'daily' => 3],
+            ['origin' => 'CGK', 'dest' => 'LBJ', 'duration' => 145, 'base_eco' => 1450000, 'daily' => 3],
+            ['origin' => 'LBJ', 'dest' => 'CGK', 'duration' => 145, 'base_eco' => 1450000, 'daily' => 3],
+            ['origin' => 'CGK', 'dest' => 'SOQ', 'duration' => 240, 'base_eco' => 2350000, 'daily' => 2],
+            ['origin' => 'SOQ', 'dest' => 'CGK', 'duration' => 240, 'base_eco' => 2350000, 'daily' => 2],
             ['origin' => 'UPG', 'dest' => 'MDC', 'duration' => 105, 'base_eco' => 980000, 'daily' => 2],
         ];
 
@@ -64,7 +72,7 @@ class FlightSeeder extends Seeder
 
         $flightBatch = [];
         $fareBatch = [];
-        $flightCounter = 1;
+        $flightCounter = (int) (DB::table('flights')->max('id') ?? 0) + 1;
 
         // Pre-create sequences
         foreach ($routes as $routeIndex => $r) {
@@ -72,6 +80,15 @@ class FlightSeeder extends Seeder
             $dest = $airports[$r['dest']] ?? null;
 
             if (!$origin || !$dest) {
+                continue;
+            }
+
+            // Skip if this route already has scheduled flights
+            $alreadyExists = DB::table('flights')
+                ->where('origin_airport_id', $origin->id)
+                ->where('destination_airport_id', $dest->id)
+                ->exists();
+            if ($alreadyExists) {
                 continue;
             }
 

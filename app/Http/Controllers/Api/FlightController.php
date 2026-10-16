@@ -31,8 +31,31 @@ class FlightController extends Controller
         $passengers = (int) ($validated['passengers'] ?? 1);
         $cabin = $validated['cabin'] ?? 'economy';
 
-        $originAirport = Airport::where('iata_code', $originCode)->firstOrFail();
-        $destAirport = Airport::where('iata_code', $destCode)->firstOrFail();
+        $originAirport = Airport::where('iata_code', $originCode)->first();
+        if (!$originAirport && $originCode === 'YIA') {
+            $originAirport = Airport::where('iata_code', 'JOG')->first();
+        } elseif (!$originAirport && $originCode === 'JOG') {
+            $originAirport = Airport::where('iata_code', 'YIA')->first();
+        }
+
+        $destAirport = Airport::where('iata_code', $destCode)->first();
+        if (!$destAirport && $destCode === 'YIA') {
+            $destAirport = Airport::where('iata_code', 'JOG')->first();
+        } elseif (!$destAirport && $destCode === 'JOG') {
+            $destAirport = Airport::where('iata_code', 'YIA')->first();
+        }
+
+        if (!$originAirport || !$destAirport) {
+            return response()->json([
+                'origin' => $originAirport ?: ['iata_code' => $originCode, 'city' => $originCode, 'name' => $originCode],
+                'destination' => $destAirport ?: ['iata_code' => $destCode, 'city' => $destCode, 'name' => $destCode],
+                'date' => $dateStr,
+                'passengers' => $passengers,
+                'cabin' => $cabin,
+                'date_strip' => [],
+                'flights' => [],
+            ]);
+        }
 
         // Convert the local date at the origin airport to UTC range
         $originTz = $originAirport->timezone ?: 'Asia/Jakarta';

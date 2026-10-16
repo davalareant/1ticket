@@ -130,6 +130,30 @@ class AirportSeeder extends Seeder
                 'latitude' => -8.758900,
                 'longitude' => 116.275800,
             ],
+            [
+                'iata_code' => 'YIA',
+                'name' => 'Bandara Internasional Yogyakarta (Kulon Progo)',
+                'city' => 'Yogyakarta',
+                'timezone' => 'Asia/Jakarta',
+                'latitude' => -7.907200,
+                'longitude' => 110.054400,
+            ],
+            [
+                'iata_code' => 'LBJ',
+                'name' => 'Bandara Komodo Labuan Bajo',
+                'city' => 'Labuan Bajo',
+                'timezone' => 'Asia/Makassar',
+                'latitude' => -8.487900,
+                'longitude' => 119.888700,
+            ],
+            [
+                'iata_code' => 'SOQ',
+                'name' => 'Bandara Domine Eduard Osok (Raja Ampat)',
+                'city' => 'Sorong (Raja Ampat)',
+                'timezone' => 'Asia/Jayapura',
+                'latitude' => -0.891100,
+                'longitude' => 131.287200,
+            ],
         ];
 
         foreach ($airports as $airport) {
