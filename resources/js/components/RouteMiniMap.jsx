@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Plane, Navigation } from 'lucide-react';
+import { Navigation } from 'lucide-react';
 
 export default function RouteMiniMap({ originAirport, destAirport }) {
     const mapContainerRef = useRef(null);
@@ -37,10 +37,10 @@ export default function RouteMiniMap({ originAirport, destAirport }) {
         // Add subtle zoom control in bottom right
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // Professional dark/voyager map tile layer (CartoDB Voyager or OpenStreetMap)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        // Standard OpenStreetMap tiles (100% Free, NO API KEY required, NO watermark)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
-            subdomains: 'abcd',
+            subdomains: ['a', 'b', 'c'],
         }).addTo(map);
 
         // Generate curved flight arc points (Bezier interpolation)
@@ -67,7 +67,7 @@ export default function RouteMiniMap({ originAirport, destAirport }) {
         L.polyline(curvedPoints, {
             color: '#F26A21',
             weight: 5,
-            opacity: 0.25,
+            opacity: 0.3,
             lineCap: 'round',
         }).addTo(map);
 
@@ -76,49 +76,41 @@ export default function RouteMiniMap({ originAirport, destAirport }) {
             color: '#F26A21',
             weight: 2.5,
             dashArray: '6, 6',
-            opacity: 0.9,
+            opacity: 0.95,
             lineCap: 'round',
         }).addTo(map);
 
-        // Custom airport markers
+        // Custom airport markers (Clean, solid, without any blinking / pulsing animation)
         const createAirportIcon = (iata, isDest = false) => {
-            const bgClass = isDest ? 'bg-[#F26A21]' : 'bg-[#0E2A47]';
-            const ringColor = isDest ? 'rgba(242, 106, 33, 0.4)' : 'rgba(14, 42, 71, 0.3)';
+            const bgColor = isDest ? '#F26A21' : '#0E2A47';
 
             return L.divIcon({
                 className: 'custom-airport-pin',
                 html: `
                     <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
                         <div style="
-                            position: absolute;
-                            width: 28px;
-                            height: 28px;
-                            border-radius: 9999px;
-                            background: ${ringColor};
-                            animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-                        "></div>
-                        <div style="
                             position: relative;
-                            padding: 3px 8px;
+                            padding: 4px 9px;
                             border-radius: 8px;
-                            background-color: ${isDest ? '#F26A21' : '#0E2A47'};
+                            background-color: ${bgColor};
                             color: #FFFFFF;
                             font-family: monospace;
                             font-weight: 800;
                             font-size: 11px;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-                            border: 1.5px solid #FFFFFF;
+                            box-shadow: 0 4px 10px rgba(14, 42, 71, 0.35);
+                            border: 2px solid #FFFFFF;
                             letter-spacing: 0.5px;
                         ">
                             ${iata}
                         </div>
                         <div style="
-                            width: 6px;
-                            height: 6px;
-                            background-color: ${isDest ? '#F26A21' : '#0E2A47'};
+                            width: 7px;
+                            height: 7px;
+                            background-color: ${bgColor};
                             border-radius: 9999px;
                             margin-top: 2px;
-                            border: 1px solid #FFFFFF;
+                            border: 1.5px solid #FFFFFF;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
                         "></div>
                     </div>
                 `,
@@ -168,7 +160,7 @@ export default function RouteMiniMap({ originAirport, destAirport }) {
                 </span>
             </div>
 
-            {/* Real Interactive Leaflet Map Container */}
+            {/* Clean Real Leaflet Map without API Key and without Blinking */}
             <div
                 ref={mapContainerRef}
                 className="w-full h-48 sm:h-56 rounded-xl border border-[#CBD5E1]/60 shadow-inner z-10"
