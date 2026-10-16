@@ -74,15 +74,6 @@ export default function FlightTakeoffHero() {
 
             {/* Hero Content */}
             <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-[#0E2A47]/10 text-xs font-bold text-[#0E2A47] mb-5 shadow-xs"
-                >
-                    <Compass className="w-4 h-4 text-[#F26A21]" />
-                    <span>Terbang Jelajah Nusantara dengan Satu Tiket</span>
-                </motion.div>
 
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}

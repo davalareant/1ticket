@@ -1,93 +1,179 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Plane } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Plane, Navigation } from 'lucide-react';
 
 export default function RouteMiniMap({ originAirport, destAirport }) {
+    const mapContainerRef = useRef(null);
+    const mapInstanceRef = useRef(null);
+
+    useEffect(() => {
+        if (!mapContainerRef.current || !originAirport || !destAirport) return;
+
+        const lat1 = parseFloat(originAirport.latitude);
+        const lon1 = parseFloat(originAirport.longitude);
+        const lat2 = parseFloat(destAirport.latitude);
+        const lon2 = parseFloat(destAirport.longitude);
+
+        if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return;
+
+        // Cleanup previous map instance if exists
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove();
+            mapInstanceRef.current = null;
+        }
+
+        // Initialize Leaflet map
+        const map = L.map(mapContainerRef.current, {
+            center: [(lat1 + lat2) / 2, (lon1 + lon2) / 2],
+            zoom: 5,
+            zoomControl: false,
+            attributionControl: false,
+            scrollWheelZoom: false,
+            dragging: !L.Browser.mobile,
+            doubleClickZoom: true,
+        });
+
+        // Add subtle zoom control in bottom right
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Professional dark/voyager map tile layer (CartoDB Voyager or OpenStreetMap)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 18,
+            subdomains: 'abcd',
+        }).addTo(map);
+
+        // Generate curved flight arc points (Bezier interpolation)
+        const pointsCount = 30;
+        const curvedPoints = [];
+
+        // Midpoint with curve offset
+        const midLat = (lat1 + lat2) / 2;
+        const midLon = (lon1 + lon2) / 2;
+        const distance = Math.hypot(lat2 - lat1, lon2 - lon1);
+        const arcOffset = Math.max(0.8, distance * 0.15); // Curve height
+        const controlLat = midLat + arcOffset;
+        const controlLon = midLon;
+
+        for (let i = 0; i <= pointsCount; i++) {
+            const t = i / pointsCount;
+            // Quadratic Bezier formula
+            const lat = (1 - t) * (1 - t) * lat1 + 2 * (1 - t) * t * controlLat + t * t * lat2;
+            const lon = (1 - t) * (1 - t) * lon1 + 2 * (1 - t) * t * controlLon + t * t * lon2;
+            curvedPoints.push([lat, lon]);
+        }
+
+        // Flight arc glow backdrop
+        L.polyline(curvedPoints, {
+            color: '#F26A21',
+            weight: 5,
+            opacity: 0.25,
+            lineCap: 'round',
+        }).addTo(map);
+
+        // Flight arc main dashed line
+        L.polyline(curvedPoints, {
+            color: '#F26A21',
+            weight: 2.5,
+            dashArray: '6, 6',
+            opacity: 0.9,
+            lineCap: 'round',
+        }).addTo(map);
+
+        // Custom airport markers
+        const createAirportIcon = (iata, isDest = false) => {
+            const bgClass = isDest ? 'bg-[#F26A21]' : 'bg-[#0E2A47]';
+            const ringColor = isDest ? 'rgba(242, 106, 33, 0.4)' : 'rgba(14, 42, 71, 0.3)';
+
+            return L.divIcon({
+                className: 'custom-airport-pin',
+                html: `
+                    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+                        <div style="
+                            position: absolute;
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 9999px;
+                            background: ${ringColor};
+                            animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+                        "></div>
+                        <div style="
+                            position: relative;
+                            padding: 3px 8px;
+                            border-radius: 8px;
+                            background-color: ${isDest ? '#F26A21' : '#0E2A47'};
+                            color: #FFFFFF;
+                            font-family: monospace;
+                            font-weight: 800;
+                            font-size: 11px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+                            border: 1.5px solid #FFFFFF;
+                            letter-spacing: 0.5px;
+                        ">
+                            ${iata}
+                        </div>
+                        <div style="
+                            width: 6px;
+                            height: 6px;
+                            background-color: ${isDest ? '#F26A21' : '#0E2A47'};
+                            border-radius: 9999px;
+                            margin-top: 2px;
+                            border: 1px solid #FFFFFF;
+                        "></div>
+                    </div>
+                `,
+                iconSize: [0, 0],
+            });
+        };
+
+        // Add origin marker
+        L.marker([lat1, lon1], { icon: createAirportIcon(originAirport.iata_code, false) })
+            .bindPopup(`<b>${originAirport.city} (${originAirport.iata_code})</b><br>${originAirport.name}`)
+            .addTo(map);
+
+        // Add destination marker
+        L.marker([lat2, lon2], { icon: createAirportIcon(destAirport.iata_code, true) })
+            .bindPopup(`<b>${destAirport.city} (${destAirport.iata_code})</b><br>${destAirport.name}`)
+            .addTo(map);
+
+        // Fit map bounds to contain both airports with nice padding
+        const bounds = L.latLngBounds([
+            [lat1, lon1],
+            [lat2, lon2],
+            [controlLat, controlLon],
+        ]);
+        map.fitBounds(bounds, { padding: [35, 45], maxZoom: 8 });
+
+        mapInstanceRef.current = map;
+
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
+            }
+        };
+    }, [originAirport, destAirport]);
+
     if (!originAirport || !destAirport) return null;
 
-    // Indonesia bounding box approx:
-    // Longitude: 95.0 to 141.0 (width: 46 deg)
-    // Latitude: 6.0 to -11.0 (height: 17 deg)
-    const mapWidth = 600;
-    const mapHeight = 220;
-
-    const lonToX = (lon) => ((lon - 95.0) / (141.0 - 95.0)) * (mapWidth - 80) + 40;
-    const latToY = (lat) => ((6.0 - lat) / (6.0 - (-11.0))) * (mapHeight - 60) + 30;
-
-    const x1 = lonToX(parseFloat(originAirport.longitude));
-    const y1 = latToY(parseFloat(originAirport.latitude));
-    const x2 = lonToX(parseFloat(destAirport.longitude));
-    const y2 = latToY(parseFloat(destAirport.latitude));
-
-    const midX = (x1 + x2) / 2;
-    // Curve arc upwards
-    const arcHeight = Math.min(60, Math.hypot(x2 - x1, y2 - y1) * 0.25);
-    const midY = (y1 + y2) / 2 - arcHeight;
-
-    const pathD = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
-
     return (
-        <div className="relative w-full bg-[#0E2A47]/5 rounded-2xl p-4 border border-[#0E2A47]/10 overflow-hidden my-4">
-            <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#5B6B7B] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#F26A21] animate-ping" />
-                    Peta Rute Interaktif (Nusantara)
+        <div className="w-full bg-white rounded-2xl p-4 border border-[#CBD5E1]/70 shadow-xs my-4 overflow-hidden">
+            <div className="flex items-center justify-between mb-3 px-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#5B6B7B] flex items-center gap-2">
+                    <Navigation className="w-3.5 h-3.5 text-[#F26A21]" />
+                    Peta Rute Penerbangan Real-Time
                 </span>
-                <span className="text-xs font-mono font-semibold text-[#0E2A47]">
-                    {originAirport.iata_code} ✈ {destAirport.iata_code}
+                <span className="text-xs font-mono font-bold text-[#0E2A47] bg-[#F6F8FA] px-2.5 py-1 rounded-lg border border-[#CBD5E1]/60">
+                    {originAirport.iata_code} → {destAirport.iata_code}
                 </span>
             </div>
 
-            <svg
-                viewBox={`0 0 ${mapWidth} ${mapHeight}`}
-                className="w-full h-36 bg-[#0E2A47] rounded-xl shadow-inner"
-            >
-                {/* Simplified Indonesia Island Outlines */}
-                <g fill="#173E66" opacity="0.45">
-                    {/* Sumatra */}
-                    <path d="M 50 60 L 130 110 L 170 145 L 140 160 L 70 90 Z" />
-                    {/* Java */}
-                    <path d="M 160 160 L 290 170 L 330 175 L 300 185 L 170 175 Z" />
-                    {/* Kalimantan */}
-                    <path d="M 210 70 L 290 60 L 320 110 L 260 140 L 200 110 Z" />
-                    {/* Sulawesi */}
-                    <path d="M 330 80 L 390 85 L 370 120 L 360 160 L 340 150 L 350 110 Z" />
-                    {/* Bali & Nusa Tenggara */}
-                    <path d="M 320 178 L 345 178 L 400 182 L 440 185 L 380 190 Z" />
-                    {/* Papua / Maluku */}
-                    <path d="M 460 70 L 580 100 L 560 160 L 490 130 Z" />
-                </g>
-
-                {/* Animated Flight Path Line (N4) */}
-                <motion.path
-                    d={pathD}
-                    fill="none"
-                    stroke="#F26A21"
-                    strokeWidth="3"
-                    strokeDasharray="6 4"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.9, ease: 'easeOut' }}
-                />
-
-                {/* Origin Point with Pulse */}
-                <g transform={`translate(${x1}, ${y1})`}>
-                    <circle r="10" fill="#CFE5F5" opacity="0.3" className="animate-ping" />
-                    <circle r="5" fill="#CFE5F5" stroke="#0E2A47" strokeWidth="2" />
-                    <text y="-10" textAnchor="middle" fill="#FFFFFF" fontSize="10" fontWeight="bold" fontFamily="monospace">
-                        {originAirport.iata_code}
-                    </text>
-                </g>
-
-                {/* Destination Point with Pulse */}
-                <g transform={`translate(${x2}, ${y2})`}>
-                    <circle r="12" fill="#F26A21" opacity="0.4" className="animate-ping" />
-                    <circle r="6" fill="#F26A21" stroke="#FFFFFF" strokeWidth="2" />
-                    <text y="-10" textAnchor="middle" fill="#F26A21" fontSize="10" fontWeight="bold" fontFamily="monospace">
-                        {destAirport.iata_code}
-                    </text>
-                </g>
-            </svg>
+            {/* Real Interactive Leaflet Map Container */}
+            <div
+                ref={mapContainerRef}
+                className="w-full h-48 sm:h-56 rounded-xl border border-[#CBD5E1]/60 shadow-inner z-10"
+                style={{ background: '#f8fafc' }}
+            />
         </div>
     );
 }
