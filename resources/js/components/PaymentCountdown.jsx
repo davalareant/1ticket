@@ -59,7 +59,7 @@ export default function PaymentCountdown({ expiresAt, onExpired }) {
                             stroke="#E2E8F0"
                             strokeWidth={strokeWidth}
                         />
-                        {/* Dynamic Progress Ring (N12) */}
+                        {/* Dynamic Progress Ring */}
                         <circle
                             cx={center}
                             cy={center}

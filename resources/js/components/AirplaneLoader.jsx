@@ -9,7 +9,7 @@ export default function AirplaneLoader({ message = 'Mencari penerbangan terbaik 
                 {/* Horizontal dotted flight line */}
                 <div className="absolute top-1/2 left-0 w-full h-0.5 border-b-2 border-dashed border-[#CBD5E1] -translate-y-1/2" />
 
-                {/* Flying Plane back and forth / gliding (N6) */}
+                {/* Plane gliding loading animation */}
                 <motion.div
                     className="relative z-10 w-12 h-12 bg-[#0E2A47] text-white rounded-2xl flex items-center justify-center shadow-lg"
                     animate={{

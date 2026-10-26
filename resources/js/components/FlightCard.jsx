@@ -11,7 +11,7 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
     const [isHovered, setIsHovered] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
 
-    // Stagger animation (N7: 40ms stagger per card, up to 6 cards)
+    // Stagger animation for card entrance
     const delay = Math.min(index, 6) * 0.04;
     const isLowSeats = flight.seats_left <= 5;
 
@@ -32,7 +32,7 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                 />
 
                 {/* Main Flight Info */}
-                <div className="flex-1 p-6 flex flex-col justify-between gap-6">
+                <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between gap-4 sm:gap-6">
                     {/* Airline & Flight Number header */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                         )}
                     </div>
 
-                    {/* Schedule & Duration with Animated Plane (N8) */}
+                    {/* Schedule & Flight Route */}
                     <div className="grid grid-cols-7 items-center gap-3 py-1">
                         {/* Departure */}
                         <div className="col-span-2 text-left">
@@ -79,7 +79,7 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                             </div>
                         </div>
 
-                        {/* Duration Line with Hover Plane shift (N8) */}
+                        {/* Duration Line with Plane Animation */}
                         <div className="col-span-3 flex flex-col items-center justify-center px-2">
                             <span className="text-[11px] font-semibold text-[#5B6B7B] mb-1.5 tabular-nums">
                                 {Math.floor(flight.duration_minutes / 60)}j {flight.duration_minutes % 60}m (Langsung)
@@ -153,21 +153,21 @@ export default function FlightCard({ flight, index = 0, onSelectFlight }) {
                 </div>
 
                 {/* Right Fare & Action Stub */}
-                <div className="w-full md:w-60 p-6 bg-[#F6F8FA]/60 flex flex-col justify-between items-center md:items-end text-center md:text-right shrink-0">
+                <div className="w-full md:w-60 p-4 sm:p-6 bg-[#F6F8FA]/80 flex flex-row md:flex-col justify-between items-center md:items-end text-left md:text-right shrink-0 gap-3">
                     <div>
-                        <span className="text-xs text-[#5B6B7B] font-semibold">Harga per orang</span>
-                        <p className="font-mono tabular-nums text-2xl font-black text-[#F26A21] mt-0.5">
+                        <span className="text-[11px] sm:text-xs text-[#5B6B7B] font-semibold block">Harga per orang</span>
+                        <p className="font-mono tabular-nums text-xl sm:text-2xl font-black text-[#F26A21] mt-0.5">
                             {formatRupiah(flight.price)}
                         </p>
-                        <span className="text-[11px] text-[#5B6B7B] font-medium">Termasuk pajak & biaya</span>
+                        <span className="text-[10px] sm:text-[11px] text-[#5B6B7B] font-medium hidden sm:inline">Termasuk pajak</span>
                     </div>
 
-                    <div className="w-full mt-4 md:mt-0">
+                    <div className="w-auto md:w-full">
                         <Button
                             id={`btn-select-flight-${flight.id}`}
                             variant="primary"
                             size="md"
-                            className="w-full justify-center"
+                            className="px-5 py-2.5 sm:w-full justify-center whitespace-nowrap"
                             onClick={() => onSelectFlight(flight)}
                         >
                             <span>Pilih Tiket</span>

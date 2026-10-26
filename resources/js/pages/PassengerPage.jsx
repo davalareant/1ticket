@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useBooking } from '../context/BookingContext';
 import Stepper from '../components/Stepper';
 import AirlineLogo from '../components/AirlineLogo';
-import { User, Phone, Mail, Shield, ArrowRight, Plane, AlertCircle } from 'lucide-react';
+import { User, Phone, Mail, Shield, ArrowRight, Plane, AlertCircle, Sparkles } from 'lucide-react';
+import { formatRupiah } from '../utils/formatters';
 
 export default function PassengerPage() {
     const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -13,7 +14,7 @@ export default function PassengerPage() {
 
     const [errors, setErrors] = useState({});
 
-    // Autofill contact from user account (B2)
+    // Autofill contact from logged in user account
     useEffect(() => {
         if (user) {
             setContact((prev) => ({
@@ -87,7 +88,7 @@ export default function PassengerPage() {
 
     return (
         <div className="min-h-screen bg-[#F6F8FA] pb-24">
-            {/* Aviation Stepper (N10) */}
+            {/* Booking Stepper */}
             <div className="bg-white border-b border-[#CBD5E1]/60">
                 <Stepper currentStep={1} />
             </div>
@@ -97,7 +98,7 @@ export default function PassengerPage() {
                     {/* Left Form: Contact & Passengers */}
                     <div className="lg:col-span-8 space-y-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Contact Details Card (B2) */}
+                            {/* Contact Details Card */}
                             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-sm">
                                 <div className="flex items-center gap-3 pb-4 border-b border-[#E2E8F0]">
                                     <div className="w-10 h-10 rounded-xl bg-[#CFE5F5] text-[#0E2A47] flex items-center justify-center">
@@ -165,7 +166,7 @@ export default function PassengerPage() {
                                 </div>
                             </div>
 
-                            {/* Passenger Forms (B1: per passenger) */}
+                            {/* Passenger Forms */}
                             {passengers.map((p, idx) => (
                                 <div key={idx} className="bg-white rounded-3xl p-6 sm:p-8 border border-[#CBD5E1]/70 shadow-sm space-y-4">
                                     <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
@@ -183,9 +184,27 @@ export default function PassengerPage() {
                                             </div>
                                         </div>
 
-                                        <span className="text-xs font-bold text-[#F26A21] bg-orange-50 px-3 py-1 rounded-full">
-                                            Dewasa
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {idx === 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handlePassengerChange(0, 'full_name', contact.name);
+                                                        if (user?.id_number) {
+                                                            handlePassengerChange(0, 'id_number', user.id_number);
+                                                        }
+                                                    }}
+                                                    className="text-[11px] font-bold text-[#0E2A47] hover:text-[#F26A21] bg-[#CFE5F5]/70 hover:bg-[#CFE5F5] px-3 py-1 rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                                >
+                                                    <Sparkles className="w-3.5 h-3.5 text-[#F26A21]" />
+                                                    <span className="hidden sm:inline">Sama dengan Kontak</span>
+                                                    <span className="sm:hidden">Salin Kontak</span>
+                                                </button>
+                                            )}
+                                            <span className="text-xs font-bold text-[#F26A21] bg-orange-50 px-3 py-1 rounded-full">
+                                                Dewasa
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2">
@@ -311,6 +330,27 @@ export default function PassengerPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Bottom Proceed Bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#CBD5E1] p-3.5 sm:p-4 shadow-2xl flex items-center justify-between">
+                <div>
+                    <span className="text-[11px] text-[#5B6B7B] block font-medium">
+                        {selectedFlight.origin?.iata_code} → {selectedFlight.destination?.iata_code} • {passengers.length} Orang
+                    </span>
+                    <span className="font-mono text-base sm:text-lg font-black text-[#F26A21]">
+                        {formatRupiah((selectedFlight.price || 0) * passengers.length)}
+                    </span>
+                </div>
+                <button
+                    type="button"
+                    id="btn-next-to-seats-mobile"
+                    onClick={handleSubmit}
+                    className="py-2.5 sm:py-3 px-5 sm:px-6 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer active:scale-98"
+                >
+                    <span>Pilih Kursi</span>
+                    <ArrowRight className="w-4 h-4" />
+                </button>
             </div>
         </div>
     );

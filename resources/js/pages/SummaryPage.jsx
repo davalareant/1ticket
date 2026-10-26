@@ -19,7 +19,10 @@ import {
     Tag,
     Check,
     Sparkles,
-    Repeat
+    Repeat,
+    X,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import { formatRupiah } from '../utils/formatters';
 
@@ -44,6 +47,7 @@ export default function SummaryPage() {
 
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [mobileBreakdownOpen, setMobileBreakdownOpen] = useState(false);
 
     if (!selectedFlight) {
         return <Navigate to="/cari" replace />;
@@ -98,6 +102,23 @@ export default function SummaryPage() {
         setVoucherInput('');
         setVoucherSuccess('');
         setVoucherError('');
+    };
+
+    const handleApplySpecificVoucher = async (code) => {
+        setVoucherInput(code);
+        setVoucherError('');
+        setVoucherSuccess('');
+        setVoucherLoading(true);
+        try {
+            const res = await api.validateVoucher(code, baseTicketTotal);
+            setAppliedVoucher(res.voucher);
+            setVoucherSuccess(res.message);
+        } catch (err) {
+            setAppliedVoucher(null);
+            setVoucherError(err.message || 'Kode voucher tidak valid.');
+        } finally {
+            setVoucherLoading(false);
+        }
     };
 
     const handleCreateBooking = async () => {
@@ -427,6 +448,33 @@ export default function SummaryPage() {
                                         </button>
                                     </form>
                                 )}
+
+                                {/* Quick Voucher Chips */}
+                                {!appliedVoucher && (
+                                    <div className="mt-2.5">
+                                        <span className="text-[10px] font-bold text-[#5B6B7B] uppercase tracking-wider block mb-1">
+                                            Kupon Siap Pakai:
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {[
+                                                { code: 'LIBURANSERU', label: '25% OFF' },
+                                                { code: 'SATUTIKET', label: 'Hemat 50rb' },
+                                                { code: 'TERBANGHEMAT', label: '15% OFF' },
+                                            ].map((v) => (
+                                                <button
+                                                    key={v.code}
+                                                    type="button"
+                                                    onClick={() => handleApplySpecificVoucher(v.code)}
+                                                    className="px-2 py-1 bg-[#F6F8FA] hover:bg-[#CFE5F5]/60 border border-[#CBD5E1] rounded-lg text-xs font-semibold text-[#0E2A47] cursor-pointer flex items-center gap-1 transition-colors"
+                                                >
+                                                    <span className="font-mono font-bold text-[#F26A21]">{v.code}</span>
+                                                    <span className="text-[10px] text-[#5B6B7B]">({v.label})</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {voucherError && (
                                     <p className="text-[11px] text-red-600 font-semibold mt-1.5">{voucherError}</p>
                                 )}
@@ -506,6 +554,113 @@ export default function SummaryPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Sticky Bottom Checkout Bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#CBD5E1] p-3.5 sm:p-4 shadow-2xl flex items-center justify-between">
+                <div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-[#5B6B7B] uppercase font-bold tracking-wider">Total</span>
+                        <button
+                            type="button"
+                            onClick={() => setMobileBreakdownOpen(true)}
+                            className="text-[11px] text-[#0E2A47] underline font-bold cursor-pointer flex items-center gap-0.5"
+                        >
+                            <span>Rincian</span>
+                            <ChevronUp className="w-3 h-3" />
+                        </button>
+                    </div>
+                    <p className="font-mono text-lg sm:text-xl font-black text-[#F26A21] leading-tight">
+                        {formatRupiah(totalAmount)}
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btn-proceed-payment-mobile"
+                    disabled={submitting}
+                    onClick={handleCreateBooking}
+                    className="py-3 px-6 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold text-sm rounded-xl shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
+                >
+                    <CreditCard className="w-4 h-4" />
+                    <span>{submitting ? 'Memproses...' : 'Lanjut Bayar'}</span>
+                </button>
+            </div>
+
+            {/* Mobile Price Breakdown Modal Drawer */}
+            {mobileBreakdownOpen && (
+                <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end justify-center p-0">
+                    <div className="bg-white w-full rounded-t-3xl shadow-2xl border-t border-[#CBD5E1] p-6 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+                        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] mb-4">
+                            <h3 className="font-bold text-[#0E2A47] text-base">Rincian Biaya Lengkap</h3>
+                            <button
+                                type="button"
+                                onClick={() => setMobileBreakdownOpen(false)}
+                                className="w-8 h-8 rounded-full bg-[#F6F8FA] hover:bg-[#E2E8F0] text-[#5B6B7B] flex items-center justify-center cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3 text-xs text-[#5B6B7B]">
+                            <div className="flex items-center justify-between">
+                                <span>Tiket Pergi ({passengerCount}x)</span>
+                                <span className="font-mono font-semibold text-[#0E2A47]">
+                                    {formatRupiah(outboundTicketTotal)}
+                                </span>
+                            </div>
+
+                            {isRoundTrip && (
+                                <div className="flex items-center justify-between">
+                                    <span>Tiket Pulang ({passengerCount}x)</span>
+                                    <span className="font-mono font-semibold text-[#0E2A47]">
+                                        {formatRupiah(returnTicketTotal)}
+                                    </span>
+                                </div>
+                            )}
+
+                            {addonsTotal > 0 && (
+                                <div className="flex items-center justify-between text-[#F26A21]">
+                                    <span>Layanan Tambahan (Add-ons)</span>
+                                    <span className="font-mono font-semibold">
+                                        +{formatRupiah(addonsTotal)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between">
+                                <span>Biaya Layanan & Administrasi</span>
+                                <span className="font-mono font-semibold text-[#0E2A47]">
+                                    {formatRupiah(adminFee)}
+                                </span>
+                            </div>
+
+                            {discountAmount > 0 && (
+                                <div className="flex items-center justify-between text-emerald-600 font-bold">
+                                    <span>Diskon Kupon</span>
+                                    <span className="font-mono">
+                                        -{formatRupiah(discountAmount)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-base">
+                                <span className="font-bold text-[#0E2A47]">Total Pembayaran</span>
+                                <span className="font-mono font-black text-[#F26A21]">
+                                    {formatRupiah(totalAmount)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setMobileBreakdownOpen(false)}
+                            className="w-full mt-6 py-3 bg-[#0E2A47] text-white font-bold text-xs rounded-xl cursor-pointer"
+                        >
+                            Tutup Rincian
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

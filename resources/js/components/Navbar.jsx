@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Plane, Ticket, User, LogOut, ChevronDown, Sparkles, Search, ShieldCheck } from 'lucide-react';
+import { Plane, Ticket, User, LogOut, ChevronDown, Sparkles, Search } from 'lucide-react';
 
 export default function Navbar() {
-    const { user, isAuthenticated, isAdmin, logout, loginAsDemo } = useAuth();
+    const { user, isAuthenticated, logout, loginAsDemo } = useAuth();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [demoLoading, setDemoLoading] = useState(false);
     const navigate = useNavigate();
@@ -71,20 +71,6 @@ export default function Navbar() {
                         <Ticket className="w-3.5 h-3.5" />
                         <span>Tiket Saya</span>
                     </Link>
-                    {isAdmin && (
-                        <Link
-                            to="/admin"
-                            id="nav-link-admin"
-                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-                                location.pathname.startsWith('/admin')
-                                    ? 'bg-[#F26A21] text-white shadow-xs'
-                                    : 'text-[#F26A21] hover:bg-orange-50'
-                            }`}
-                        >
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>Portal Admin</span>
-                        </Link>
-                    )}
                 </nav>
 
                 {/* Right Auth section */}
@@ -131,17 +117,6 @@ export default function Navbar() {
                                         <Ticket className="w-4 h-4 text-[#5B6B7B]" />
                                         Tiket Saya
                                     </Link>
-                                    {isAdmin && (
-                                        <Link
-                                            to="/admin"
-                                            id="dropdown-link-admin"
-                                            onClick={() => setDropdownOpen(false)}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-[#F26A21] hover:bg-orange-50 transition-colors"
-                                        >
-                                            <ShieldCheck className="w-4 h-4 text-[#F26A21]" />
-                                            Portal Admin
-                                        </Link>
-                                    )}
                                     <button
                                         id="btn-logout"
                                         onClick={handleLogout}

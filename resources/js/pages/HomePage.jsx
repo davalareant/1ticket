@@ -6,6 +6,8 @@ import FlightTakeoffHero from '../components/FlightTakeoffHero';
 import FlightSearchForm from '../components/FlightSearchForm';
 import FlightScrollSwipeTransition from '../components/FlightScrollSwipeTransition';
 import AirlineLogo from '../components/AirlineLogo';
+import SpotlightCard from '../components/reactbits/SpotlightCard';
+import CountUp from '../components/reactbits/CountUp';
 import { useToast } from '../components/ui/Toast';
 import { api } from '../api/client';
 import { formatRupiah, formatDate } from '../utils/formatters';
@@ -129,11 +131,11 @@ const POPULAR_DESTINATIONS = [
 ];
 
 const AIRLINE_PARTNERS = [
-    { name: 'Garuda Indonesia', code: 'GA', type: 'Full Service • Bintang 5', color: '#0E2A47', note: 'Gratis Bagasi 20kg & Makanan Hangat' },
-    { name: 'Citilink', code: 'QG', type: 'Low Cost • On-Time Terbaik', color: '#008444', note: 'Kabin Nyaman & Boarding Cepat' },
-    { name: 'Batik Air', code: 'ID', type: 'Full Service • Hiburan Layar', color: '#880E4F', note: 'Kabin Luas & Snack Gratis' },
-    { name: 'Lion Air', code: 'JT', type: 'Low Cost • Rute Terlengkap', color: '#D32F2F', note: 'Jangkauan Terluas Seantero Negeri' },
-    { name: 'Super Air Jet', code: 'IU', type: 'Milenial • Armada Modern', color: '#C59B27', note: 'Pesawat Generasi Baru A320' },
+    { name: 'Garuda Indonesia', code: 'GA', type: 'The Airline of Indonesia', color: '#0E2A47', note: 'Layanan Keramahan Bintang 5 Khas Indonesia' },
+    { name: 'Citilink', code: 'QG', type: 'Better Fly Citilink', color: '#008444', note: 'Terbang Praktis, Nyaman & Tepat Waktu' },
+    { name: 'Batik Air', code: 'ID', type: 'Menerbangkan Indonesia', color: '#880E4F', note: 'Kenyamanan Premium dengan Sentuhan Budaya Nusantara' },
+    { name: 'Lion Air', code: 'JT', type: 'We Make People Fly', color: '#D32F2F', note: 'Jaringan Penerbangan Terluas Seantero Negeri' },
+    { name: 'AirAsia Indonesia', code: 'QZ', type: 'Now Everyone Can Fly', color: '#E11D48', note: 'Pelopor Penerbangan Hemat & Fleksibel di Asia' },
 ];
 
 export default function HomePage() {
@@ -237,10 +239,6 @@ export default function HomePage() {
                     className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4"
                 >
                     <div>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26A21]/10 text-[#F26A21] text-xs font-black uppercase tracking-wider mb-2">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            Promo Spesial Hari Ini
-                        </div>
                         <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0E2A47] tracking-tight">
                             Kupon Diskon Penerbangan
                         </h2>
@@ -345,10 +343,6 @@ export default function HomePage() {
                     className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4"
                 >
                     <div>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E2A47]/10 text-[#0E2A47] text-xs font-black uppercase tracking-wider mb-2">
-                            <MapPin className="w-3.5 h-3.5 text-[#F26A21]" />
-                            Eksplorasi Wisata Terbaik
-                        </div>
                         <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0E2A47] tracking-tight">
                             Destinasi Favorit Indonesia
                         </h2>
@@ -443,12 +437,8 @@ export default function HomePage() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="text-center max-w-2xl mx-auto mb-12"
+                        className="text-center max-w-2xl mx-auto mb-10"
                     >
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E2A47]/10 text-[#0E2A47] text-xs font-black uppercase tracking-wider mb-2">
-                            <Award className="w-3.5 h-3.5 text-[#F26A21]" />
-                            Maskapai Terpercaya
-                        </div>
                         <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0E2A47] tracking-tight">
                             Partner Maskapai Resmi Indonesia
                         </h2>
@@ -459,111 +449,110 @@ export default function HomePage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         {AIRLINE_PARTNERS.map((airline, idx) => (
-                            <motion.div
+                            <SpotlightCard
                                 key={idx}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: idx * 0.08 }}
-                                whileHover={{ y: -4, scale: 1.02 }}
-                                className="p-5 rounded-2xl bg-[#F6F8FA] border border-[#CBD5E1]/60 hover:border-[#F26A21] hover:shadow-md transition-all flex flex-col justify-between"
+                                spotlightColor="rgba(242, 106, 33, 0.18)"
+                                className="p-5 rounded-2xl bg-[#F6F8FA] border border-[#CBD5E1]/70 hover:border-[#F26A21] hover:shadow-lg transition-all flex flex-col justify-between cursor-pointer"
                             >
-                                <div>
-                                    <AirlineLogo code={airline.code} airline={{ name: airline.name }} size="md" className="mb-3" />
-                                    <h4 className="font-bold text-sm text-[#0E2A47] tracking-tight">
-                                        {airline.name}
-                                    </h4>
-                                    <p className="text-[11px] text-[#F26A21] font-semibold mt-0.5">
+                                <div className="relative z-10">
+                                    <div className="h-12 flex items-center mb-2">
+                                        <AirlineLogo code={airline.code} airline={{ name: airline.name }} size="lg" />
+                                    </div>
+                                    <p className="text-[11px] text-[#F26A21] font-semibold mt-1">
                                         {airline.type}
                                     </p>
                                 </div>
-                                <p className="text-[11px] text-[#5B6B7B] mt-3 pt-3 border-t border-[#E2E8F0]">
+                                <p className="relative z-10 text-[11px] text-[#5B6B7B] mt-3 pt-3 border-t border-[#E2E8F0]">
                                     {airline.note}
                                 </p>
-                            </motion.div>
+                            </SpotlightCard>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Section 4: Jaminan Layanan 1Tiket */}
+            {/* Section 4: Jaminan Layanan & Metrik Kepercayaan 1Tiket */}
             <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-16 w-full">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <motion.div
-                        initial={{ opacity: 0, y: 25 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: 0.05 }}
-                        whileHover={{ y: -4 }}
-                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <SpotlightCard
+                        spotlightColor="rgba(2, 132, 199, 0.18)"
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/70 shadow-xs flex flex-col justify-between hover:shadow-lg transition-all"
                     >
-                        <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
-                            <ShieldCheck className="w-6 h-6 text-[#0E2A47]" />
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
+                                <ShieldCheck className="w-6 h-6 text-[#0E2A47]" />
+                            </div>
+                            <div className="font-display text-2xl font-black text-[#0E2A47] tracking-tight mb-1">
+                                <CountUp to={100} duration={2} suffix="%" /> Aman
+                            </div>
+                            <h4 className="font-bold text-sm text-[#0E2A47] mb-1">
+                                Transaksi Terenkripsi
+                            </h4>
+                            <p className="text-xs text-[#5B6B7B] leading-relaxed">
+                                Enkripsi transaksi resmi dan perlindungan privasi penumpang terjamin di setiap pemesanan.
+                            </p>
                         </div>
-                        <h4 className="font-bold text-base text-[#0E2A47] mb-1">
-                            Pemesanan 100% Aman
-                        </h4>
-                        <p className="text-xs text-[#5B6B7B] leading-relaxed">
-                            Enkripsi transaksi resmi dan perlindungan privasi penumpang terjamin di setiap pemesanan.
-                        </p>
-                    </motion.div>
+                    </SpotlightCard>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 25 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: 0.15 }}
-                        whileHover={{ y: -4 }}
-                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    <SpotlightCard
+                        spotlightColor="rgba(242, 106, 33, 0.18)"
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/70 shadow-xs flex flex-col justify-between hover:shadow-lg transition-all"
                     >
-                        <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
-                            <Zap className="w-6 h-6" />
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
+                                <Zap className="w-6 h-6" />
+                            </div>
+                            <div className="font-display text-2xl font-black text-[#0E2A47] tracking-tight mb-1">
+                                &lt; <CountUp to={15} duration={1.8} suffix=" Detik" />
+                            </div>
+                            <h4 className="font-bold text-sm text-[#0E2A47] mb-1">
+                                E-Ticket Instan
+                            </h4>
+                            <p className="text-xs text-[#5B6B7B] leading-relaxed">
+                                Begitu pembayaran terverifikasi, e-ticket dan kode booking resmi langsung terbit otomatis.
+                            </p>
                         </div>
-                        <h4 className="font-bold text-base text-[#0E2A47] mb-1">
-                            E-Ticket Instan
-                        </h4>
-                        <p className="text-xs text-[#5B6B7B] leading-relaxed">
-                            Begitu pembayaran terverifikasi, e-ticket dan kode booking resmi langsung terbit hitungan detik.
-                        </p>
-                    </motion.div>
+                    </SpotlightCard>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 25 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: 0.25 }}
-                        whileHover={{ y: -4 }}
-                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    <SpotlightCard
+                        spotlightColor="rgba(2, 132, 199, 0.18)"
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/70 shadow-xs flex flex-col justify-between hover:shadow-lg transition-all"
                     >
-                        <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
-                            <RefreshCw className="w-6 h-6 text-[#0E2A47]" />
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-2xl bg-[#CFE5F5]/60 text-[#0E2A47] flex items-center justify-center mb-4">
+                                <RefreshCw className="w-6 h-6 text-[#0E2A47]" />
+                            </div>
+                            <div className="font-display text-2xl font-black text-[#0E2A47] tracking-tight mb-1">
+                                <CountUp to={100} duration={2.2} suffix="%" /> Transparan
+                            </div>
+                            <h4 className="font-bold text-sm text-[#0E2A47] mb-1">
+                                Fleksibilitas Jadwal
+                            </h4>
+                            <p className="text-xs text-[#5B6B7B] leading-relaxed">
+                                Bisa ubah jadwal maupun pembatalan tiket dengan ketentuan jelas dan panduan check-in cepat.
+                            </p>
                         </div>
-                        <h4 className="font-bold text-base text-[#0E2A47] mb-1">
-                            Fleksibilitas Jadwal
-                        </h4>
-                        <p className="text-xs text-[#5B6B7B] leading-relaxed">
-                            Bisa ubah jadwal maupun pembatalan tiket dengan syarat transparan dan bantuan panduan cepat.
-                        </p>
-                    </motion.div>
+                    </SpotlightCard>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 25 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: 0.35 }}
-                        whileHover={{ y: -4 }}
-                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/60 shadow-xs flex flex-col"
+                    <SpotlightCard
+                        spotlightColor="rgba(242, 106, 33, 0.18)"
+                        className="p-6 rounded-3xl bg-white border border-[#CBD5E1]/70 shadow-xs flex flex-col justify-between hover:shadow-lg transition-all"
                     >
-                        <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
-                            <Headphones className="w-6 h-6" />
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 rounded-2xl bg-[#F26A21]/15 text-[#F26A21] flex items-center justify-center mb-4">
+                                <Headphones className="w-6 h-6" />
+                            </div>
+                            <div className="font-display text-2xl font-black text-[#0E2A47] tracking-tight mb-1">
+                                <CountUp to={24} duration={1.5} suffix=" Jam" /> Siap
+                            </div>
+                            <h4 className="font-bold text-sm text-[#0E2A47] mb-1">
+                                Layanan Pelanggan
+                            </h4>
+                            <p className="text-xs text-[#5B6B7B] leading-relaxed">
+                                Pendampingan informasi rute bandara, bagasi tambahan, dan bantuan penerbangan setiap saat.
+                            </p>
                         </div>
-                        <h4 className="font-bold text-base text-[#0E2A47] mb-1">
-                            Bantuan Pelanggan 24 Jam
-                        </h4>
-                        <p className="text-xs text-[#5B6B7B] leading-relaxed">
-                            Tim layanan pelanggan siap mendampingi kebutuhan informasi rute dan check-in online Anda.
-                        </p>
-                    </motion.div>
+                    </SpotlightCard>
                 </div>
             </section>
         </div>

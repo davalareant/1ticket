@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Plane, Compass, Sparkles } from 'lucide-react';
+import BlurText from './reactbits/BlurText';
 
 export default function FlightTakeoffHero() {
     return (
         <section className="relative overflow-hidden bg-gradient-to-b from-[#CFE5F5] via-[#E6F1F9] to-[#F6F8FA] pt-14 pb-20 border-b border-[#0E2A47]/10">
-            {/* Background Clouds (N2) */}
+            {/* Background Clouds */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {/* Cloud layer 1 - Slow */}
                 <div className="absolute -top-6 -left-20 w-[120%] opacity-40 animate-cloud-slow">
@@ -23,7 +24,7 @@ export default function FlightTakeoffHero() {
                 </div>
             </div>
 
-            {/* Takeoff SVG Trail & Plane (N1) */}
+            {/* Takeoff SVG Trail & Plane */}
             <div className="absolute inset-0 pointer-events-none z-0">
                 <svg
                     className="w-full h-full"
@@ -45,7 +46,7 @@ export default function FlightTakeoffHero() {
                     />
                 </svg>
 
-                {/* Animated Flying Airplane along Arc (N1) */}
+                {/* Animated Flying Airplane along Arc */}
                 <motion.div
                     className="absolute z-10"
                     initial={{ x: 50, y: 350, scale: 0.8, rotate: -15, opacity: 0 }}
@@ -74,20 +75,21 @@ export default function FlightTakeoffHero() {
 
             {/* Hero Content */}
             <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0E2A47] leading-tight"
-                >
-                    Boarding Pass di Bawah <span className="text-[#F26A21]">Langit</span> Indonesia
-                </motion.h1>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0E2A47] leading-tight">
+                    <BlurText
+                        text="Boarding Pass di Bawah"
+                        delay={80}
+                        animateBy="words"
+                        direction="top"
+                        className="inline-flex justify-center"
+                    />{' '}
+                    <span className="text-[#F26A21] inline-block">Langit</span> Indonesia
+                </h1>
 
                 <motion.p
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className="mt-4 text-base sm:text-lg text-[#5B6B7B] max-w-2xl mx-auto leading-relaxed"
                 >
                     Cari jadwal terbaik antar kota, pilih kursi favorit langsung di kabin pesawat, dan rasakan pengalaman e-ticket instan yang memikat.

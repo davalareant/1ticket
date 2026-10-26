@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { api } from '../api/client';
 import { useBooking } from '../context/BookingContext';
 import RouteMiniMap from './RouteMiniMap';
-import { ArrowLeftRight, Calendar, Users, Briefcase, Search, MapPin, PlaneTakeoff, PlaneLanding, Repeat, ArrowRight } from 'lucide-react';
+import { ArrowLeftRight, Calendar, Users, Briefcase, Search, MapPin, PlaneTakeoff, PlaneLanding, Repeat, ArrowRight, X, Sparkles } from 'lucide-react';
 
 export default function FlightSearchForm({ initialValues, onSearchSubmit, showMap = true }) {
     const navigate = useNavigate();
@@ -66,7 +66,7 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
     const originAirport = airports.find((a) => a.iata_code === origin);
     const destAirport = airports.find((a) => a.iata_code === destination);
 
-    // Swap Origin and Destination (N5: rotate 180deg, 0.3s)
+    // Swap Origin and Destination
     const handleSwap = () => {
         setSwapRotating(true);
         const temp = origin;
@@ -232,39 +232,99 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                             <MapPin className="w-4 h-4 text-[#5B6B7B]" />
                         </button>
 
-                        {/* Autocomplete Dropdown */}
+                        {/* Autocomplete Picker Dialog */}
                         {originOpen && (
-                            <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-                                <input
-                                    type="text"
-                                    id="input-search-origin"
-                                    placeholder="Cari kota / kode IATA..."
-                                    value={originSearch}
-                                    onChange={(e) => setOriginSearch(e.target.value)}
-                                    autoFocus
-                                    className="w-full px-3.5 py-2 text-sm bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F26A21] mb-2 font-medium"
-                                />
-                                <div className="max-h-60 overflow-y-auto space-y-1">
-                                    {filteredOrigins.map((a) => (
+                            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+                                <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#CBD5E1] p-5 max-h-[85vh] flex flex-col animate-in fade-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <PlaneTakeoff className="w-5 h-5 text-[#0E2A47]" />
+                                            <h3 className="font-bold text-[#0E2A47] text-base">Pilih Bandara Asal</h3>
+                                        </div>
                                         <button
-                                            key={a.iata_code}
                                             type="button"
                                             onClick={() => {
-                                                setOrigin(a.iata_code);
                                                 setOriginOpen(false);
                                                 setOriginSearch('');
                                             }}
-                                            className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#CFE5F5]/40 flex items-center justify-between transition-colors cursor-pointer"
+                                            className="w-8 h-8 rounded-full bg-[#F6F8FA] hover:bg-[#E2E8F0] text-[#5B6B7B] flex items-center justify-center cursor-pointer"
                                         >
-                                            <div>
-                                                <p className="text-sm font-bold text-[#0E2A47]">{a.city}</p>
-                                                <p className="text-xs text-[#5B6B7B] truncate max-w-[190px]">{a.name}</p>
-                                            </div>
-                                            <span className="font-mono font-bold text-sm bg-[#0E2A47]/10 px-2 py-0.5 rounded text-[#0E2A47]">
-                                                {a.iata_code}
-                                            </span>
+                                            <X className="w-4 h-4" />
                                         </button>
-                                    ))}
+                                    </div>
+
+                                    <div className="relative mb-3">
+                                        <Search className="w-4 h-4 text-[#5B6B7B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                        <input
+                                            type="text"
+                                            id="input-search-origin"
+                                            placeholder="Ketik kota atau nama bandara..."
+                                            value={originSearch}
+                                            onChange={(e) => setOriginSearch(e.target.value)}
+                                            autoFocus
+                                            className="w-full pl-10 pr-4 py-2.5 bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl text-sm font-semibold text-[#0E2A47] focus:ring-2 focus:ring-[#F26A21] focus:outline-none"
+                                        />
+                                    </div>
+
+                                    {/* Popular Airport Chips */}
+                                    <div className="mb-3">
+                                        <span className="text-[11px] font-bold text-[#5B6B7B] uppercase tracking-wider block mb-1.5">
+                                            Bandara Populer
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {[
+                                                { code: 'CGK', city: 'Jakarta' },
+                                                { code: 'DPS', city: 'Bali (DPS)' },
+                                                { code: 'SUB', city: 'Surabaya' },
+                                                { code: 'JOG', city: 'Yogyakarta' },
+                                                { code: 'KNO', city: 'Medan' },
+                                                { code: 'UPG', city: 'Makassar' },
+                                            ].map((p) => (
+                                                <button
+                                                    key={p.code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setOrigin(p.code);
+                                                        setOriginOpen(false);
+                                                        setOriginSearch('');
+                                                    }}
+                                                    className="px-2.5 py-1 bg-[#F6F8FA] hover:bg-[#CFE5F5]/60 border border-[#CBD5E1] rounded-lg text-xs font-semibold text-[#0E2A47] cursor-pointer flex items-center gap-1.5"
+                                                >
+                                                    <span className="font-mono font-bold text-[#F26A21]">{p.code}</span>
+                                                    <span>{p.city}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-y-auto max-h-60 space-y-1 divide-y divide-[#F1F5F9]">
+                                        {filteredOrigins.length === 0 ? (
+                                            <p className="text-center py-6 text-xs text-[#5B6B7B]">
+                                                Bandara tidak ditemukan untuk "{originSearch}".
+                                            </p>
+                                        ) : (
+                                            filteredOrigins.map((a) => (
+                                                <button
+                                                    key={a.iata_code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setOrigin(a.iata_code);
+                                                        setOriginOpen(false);
+                                                        setOriginSearch('');
+                                                    }}
+                                                    className="w-full py-2.5 px-3 text-left rounded-xl hover:bg-[#CFE5F5]/40 flex items-center justify-between transition-colors cursor-pointer group"
+                                                >
+                                                    <div>
+                                                        <p className="text-sm font-bold text-[#0E2A47] group-hover:text-[#F26A21] transition-colors">{a.city}</p>
+                                                        <p className="text-xs text-[#5B6B7B] truncate max-w-[240px]">{a.name}</p>
+                                                    </div>
+                                                    <span className="font-mono font-bold text-sm bg-[#0E2A47]/10 px-2 py-0.5 rounded text-[#0E2A47]">
+                                                        {a.iata_code}
+                                                    </span>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -313,43 +373,134 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
                             <MapPin className="w-4 h-4 text-[#5B6B7B]" />
                         </button>
 
-                        {/* Autocomplete Dropdown */}
+                        {/* Autocomplete Picker Dialog */}
                         {destOpen && (
-                            <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-                                <input
-                                    type="text"
-                                    id="input-search-dest"
-                                    placeholder="Cari kota / kode IATA..."
-                                    value={destSearch}
-                                    onChange={(e) => setDestSearch(e.target.value)}
-                                    autoFocus
-                                    className="w-full px-3.5 py-2 text-sm bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F26A21] mb-2 font-medium"
-                                />
-                                <div className="max-h-60 overflow-y-auto space-y-1">
-                                    {filteredDests.map((a) => (
+                            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+                                <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[#CBD5E1] p-5 max-h-[85vh] flex flex-col animate-in fade-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
+                                    <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <PlaneLanding className="w-5 h-5 text-[#F26A21]" />
+                                            <h3 className="font-bold text-[#0E2A47] text-base">Pilih Bandara Tujuan</h3>
+                                        </div>
                                         <button
-                                            key={a.iata_code}
                                             type="button"
                                             onClick={() => {
-                                                setDestination(a.iata_code);
                                                 setDestOpen(false);
                                                 setDestSearch('');
                                             }}
-                                            className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#CFE5F5]/40 flex items-center justify-between transition-colors cursor-pointer"
+                                            className="w-8 h-8 rounded-full bg-[#F6F8FA] hover:bg-[#E2E8F0] text-[#5B6B7B] flex items-center justify-center cursor-pointer"
                                         >
-                                            <div>
-                                                <p className="text-sm font-bold text-[#0E2A47]">{a.city}</p>
-                                                <p className="text-xs text-[#5B6B7B] truncate max-w-[190px]">{a.name}</p>
-                                            </div>
-                                            <span className="font-mono font-bold text-sm bg-[#0E2A47]/10 px-2 py-0.5 rounded text-[#0E2A47]">
-                                                {a.iata_code}
-                                            </span>
+                                            <X className="w-4 h-4" />
                                         </button>
-                                    ))}
+                                    </div>
+
+                                    <div className="relative mb-3">
+                                        <Search className="w-4 h-4 text-[#5B6B7B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                        <input
+                                            type="text"
+                                            id="input-search-dest"
+                                            placeholder="Ketik kota atau nama bandara..."
+                                            value={destSearch}
+                                            onChange={(e) => setDestSearch(e.target.value)}
+                                            autoFocus
+                                            className="w-full pl-10 pr-4 py-2.5 bg-[#F6F8FA] border border-[#CBD5E1] rounded-xl text-sm font-semibold text-[#0E2A47] focus:ring-2 focus:ring-[#F26A21] focus:outline-none"
+                                        />
+                                    </div>
+
+                                    {/* Popular Airport Chips */}
+                                    <div className="mb-3">
+                                        <span className="text-[11px] font-bold text-[#5B6B7B] uppercase tracking-wider block mb-1.5">
+                                            Bandara Populer
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {[
+                                                { code: 'DPS', city: 'Bali (DPS)' },
+                                                { code: 'CGK', city: 'Jakarta' },
+                                                { code: 'SUB', city: 'Surabaya' },
+                                                { code: 'JOG', city: 'Yogyakarta' },
+                                                { code: 'KNO', city: 'Medan' },
+                                                { code: 'UPG', city: 'Makassar' },
+                                            ].map((p) => (
+                                                <button
+                                                    key={p.code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setDestination(p.code);
+                                                        setDestOpen(false);
+                                                        setDestSearch('');
+                                                    }}
+                                                    className="px-2.5 py-1 bg-[#F6F8FA] hover:bg-[#CFE5F5]/60 border border-[#CBD5E1] rounded-lg text-xs font-semibold text-[#0E2A47] cursor-pointer flex items-center gap-1.5"
+                                                >
+                                                    <span className="font-mono font-bold text-[#F26A21]">{p.code}</span>
+                                                    <span>{p.city}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-y-auto max-h-60 space-y-1 divide-y divide-[#F1F5F9]">
+                                        {filteredDests.length === 0 ? (
+                                            <p className="text-center py-6 text-xs text-[#5B6B7B]">
+                                                Bandara tidak ditemukan untuk "{destSearch}".
+                                            </p>
+                                        ) : (
+                                            filteredDests.map((a) => (
+                                                <button
+                                                    key={a.iata_code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setDestination(a.iata_code);
+                                                        setDestOpen(false);
+                                                        setDestSearch('');
+                                                    }}
+                                                    className="w-full py-2.5 px-3 text-left rounded-xl hover:bg-[#CFE5F5]/40 flex items-center justify-between transition-colors cursor-pointer group"
+                                                >
+                                                    <div>
+                                                        <p className="text-sm font-bold text-[#0E2A47] group-hover:text-[#F26A21] transition-colors">{a.city}</p>
+                                                        <p className="text-xs text-[#5B6B7B] truncate max-w-[240px]">{a.name}</p>
+                                                    </div>
+                                                    <span className="font-mono font-bold text-sm bg-[#0E2A47]/10 px-2 py-0.5 rounded text-[#0E2A47]">
+                                                        {a.iata_code}
+                                                    </span>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
                     </div>
+                </div>
+
+                {/* Popular Route Presets */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0 text-xs no-scrollbar">
+                    <span className="text-[#5B6B7B] font-bold shrink-0 flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-[#F26A21]" />
+                        Rute Cepat:
+                    </span>
+                    {[
+                        { label: 'Jakarta ➔ Bali', from: 'CGK', to: 'DPS' },
+                        { label: 'Jakarta ➔ Surabaya', from: 'CGK', to: 'SUB' },
+                        { label: 'Jakarta ➔ Jogja', from: 'CGK', to: 'JOG' },
+                        { label: 'Jakarta ➔ Medan', from: 'CGK', to: 'KNO' },
+                        { label: 'Surabaya ➔ Bali', from: 'SUB', to: 'DPS' },
+                    ].map((r, idx) => (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                                setOrigin(r.from);
+                                setDestination(r.to);
+                            }}
+                            className={`px-3 py-1 rounded-full border transition-all cursor-pointer shrink-0 font-medium ${
+                                origin === r.from && destination === r.to
+                                    ? 'bg-[#0E2A47] text-white border-[#0E2A47] shadow-xs'
+                                    : 'bg-[#F6F8FA] hover:bg-[#EEF2F6] text-[#0E2A47] border-[#CBD5E1]'
+                            }`}
+                        >
+                            {r.label}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Date, Passengers, Cabin Class & Submit */}
@@ -446,7 +597,9 @@ export default function FlightSearchForm({ initialValues, onSearchSubmit, showMa
 
                 {/* Animated Route Mini Map */}
                 {showMap && originAirport && destAirport && origin !== destination && (
-                    <RouteMiniMap originAirport={originAirport} destAirport={destAirport} />
+                    <div className="hidden sm:block">
+                        <RouteMiniMap originAirport={originAirport} destAirport={destAirport} />
+                    </div>
                 )}
             </form>
         </div>

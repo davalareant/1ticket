@@ -72,40 +72,4 @@ export const api = {
         method: 'POST',
         body: { action },
     }),
-
-    // Admin Portal
-    getAdminStats: () => apiRequest('/admin/stats'),
-    getAdminMeta: () => apiRequest('/admin/meta'),
-    getAdminFlights: () => apiRequest('/admin/flights'),
-    createAdminFlight: (payload) => apiRequest('/admin/flights', {
-        method: 'POST',
-        body: payload,
-    }),
-    updateAdminFlight: (id, payload) => apiRequest(`/admin/flights/${id}`, {
-        method: 'PUT',
-        body: payload,
-    }),
-    deleteAdminFlight: (id) => apiRequest(`/admin/flights/${id}`, {
-        method: 'DELETE',
-    }),
-    getAdminVouchers: () => apiRequest('/admin/vouchers'),
-    createAdminVoucher: (payload) => apiRequest('/admin/vouchers', {
-        method: 'POST',
-        body: payload,
-    }),
-    updateAdminVoucher: (id, payload) => apiRequest(`/admin/vouchers/${id}`, {
-        method: 'PUT',
-        body: payload,
-    }),
-    deleteAdminVoucher: (id) => apiRequest(`/admin/vouchers/${id}`, {
-        method: 'DELETE',
-    }),
-    getAdminBookings: (params = {}) => {
-        const query = new URLSearchParams(params).toString();
-        return apiRequest(`/admin/bookings?${query}`);
-    },
-    updateAdminBookingStatus: (code, status) => apiRequest(`/admin/bookings/${code}/status`, {
-        method: 'PUT',
-        body: { status },
-    }),
 };

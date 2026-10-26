@@ -38,7 +38,7 @@ export default function ScrollToTopPlane() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.7, y: 30 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                    className="fixed bottom-6 right-6 z-40"
+                    className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-40"
                 >
                     <motion.button
                         type="button"
@@ -80,12 +80,6 @@ export default function ScrollToTopPlane() {
                                 <ChevronUp className="w-3.5 h-3.5" />
                             </span>
                         </div>
-
-                        {/* Subtle ping pulse */}
-                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F26A21] opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#F26A21]"></span>
-                        </span>
                     </motion.button>
                 </motion.div>
             )}

@@ -18,11 +18,6 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
     public function bookings()
     {
         return $this->hasMany(Booking::class);

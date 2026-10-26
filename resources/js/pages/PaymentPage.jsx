@@ -26,7 +26,7 @@ export default function PaymentPage() {
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
 
-    // Success Celebration Animation Modal (N14)
+    // Success Celebration Animation Modal
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Fetch booking details and payment methods
@@ -49,7 +49,18 @@ export default function PaymentPage() {
                     setActivePayment(existingPending);
                     setSelectedMethodId(existingPending.payment_method_id);
                 } else if (mData.length > 0) {
-                    setSelectedMethodId(mData[0].id);
+                    const defaultMethodId = mData[0].id;
+                    setSelectedMethodId(defaultMethodId);
+                    // Otomatis buat invoice/tagihan awal jika belum ada pending payment
+                    api.initiatePayment(kode, defaultMethodId)
+                        .then((res) => {
+                            if (res && res.payment) {
+                                setActivePayment(res.payment);
+                            }
+                        })
+                        .catch((e) => {
+                            console.error('Auto initiate payment error:', e);
+                        });
                 }
             })
             .catch((err) => {
@@ -88,17 +99,26 @@ export default function PaymentPage() {
         }
     };
 
-    // Simulate payment (N14)
+    // Simulate payment
     const handleSimulate = async (action) => {
-        if (!activePayment) return;
         setSimulating(true);
         setError('');
 
         try {
-            const res = await api.simulatePayment(activePayment.reference_code, action);
+            let currentPayment = activePayment;
+            // Jika belum ada activePayment, inisiasikan pembayaran terlebih dahulu
+            if (!currentPayment) {
+                const targetMethodId = selectedMethodId || paymentMethods[0]?.id;
+                if (!targetMethodId) throw new Error('Metode pembayaran belum dipilih.');
+                const initRes = await api.initiatePayment(kode, targetMethodId);
+                currentPayment = initRes.payment;
+                setActivePayment(currentPayment);
+            }
+
+            const res = await api.simulatePayment(currentPayment.reference_code, action);
 
             if (action === 'success') {
-                // Show takeoff celebration modal (N14)
+                // Show takeoff celebration modal
                 setShowSuccessModal(true);
                 setTimeout(() => {
                     navigate(`/tiket/${booking.booking_code}`);
@@ -114,7 +134,7 @@ export default function PaymentPage() {
         }
     };
 
-    // Cancel booking (B6)
+    // Cancel booking
     const handleCancel = async () => {
         if (!window.confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) return;
         try {
@@ -158,7 +178,7 @@ export default function PaymentPage() {
                 <Stepper currentStep={4} />
             </div>
 
-            {/* Success Celebration Overlay (N14: Centang tergambar, pesawat lepas landas dari tengah) */}
+            {/* Success Celebration Overlay */}
             <AnimatePresence>
                 {showSuccessModal && (
                     <motion.div
@@ -176,7 +196,7 @@ export default function PaymentPage() {
                             <Check className="w-14 h-14 stroke-[3]" />
                         </motion.div>
 
-                        {/* Animated Airplane Taking Off (N14) */}
+                        {/* Animated Airplane Taking Off */}
                         <motion.div
                             initial={{ y: 0, scale: 0.8 }}
                             animate={{
@@ -203,7 +223,7 @@ export default function PaymentPage() {
             </AnimatePresence>
 
             <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 pt-8 space-y-6">
-                {/* 15-Minute Countdown Ring (N12) */}
+                {/* 15-Minute Countdown Ring */}
                 <PaymentCountdown
                     expiresAt={booking.expires_at}
                     onExpired={() => loadBookingData()}
@@ -306,7 +326,7 @@ export default function PaymentPage() {
                                 })}
                             </div>
 
-                            {/* Cancel Option (B6) */}
+                            {/* Cancel Option */}
                             <div className="pt-2">
                                 <button
                                     type="button"
@@ -336,7 +356,7 @@ export default function PaymentPage() {
                                         <p>Menyiapkan kode pembayaran…</p>
                                     </div>
                                 ) : currentMethod?.type === 'qris' ? (
-                                    /* QRIS View with Scanning Beam (N13) */
+                                    /* QRIS View with Scanning Beam */
                                     <div className="flex flex-col items-center justify-center py-4 text-center">
                                         <div className="relative p-4 bg-white rounded-3xl border-2 border-[#0E2A47] shadow-xl overflow-hidden">
                                             {/* Glowing QR code */}
@@ -345,7 +365,7 @@ export default function PaymentPage() {
                                                 size={180}
                                                 level="H"
                                             />
-                                            {/* Red/Orange Scanning Laser Beam (N13) */}
+                                            {/* Red/Orange Scanning Laser Beam */}
                                             <div className="absolute left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#F26A21] to-transparent shadow-[0_0_12px_#F26A21] animate-qr-scan pointer-events-none" />
                                         </div>
 
@@ -440,6 +460,28 @@ export default function PaymentPage() {
                     </div>
                 )}
             </div>
+
+            {/* Mobile Sticky Simulation Bar */}
+            {!isExpired && !isCancelled && booking && (
+                <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#CBD5E1] p-3.5 shadow-2xl flex items-center justify-between gap-3">
+                    <div>
+                        <span className="text-[10px] text-[#5B6B7B] uppercase font-bold block">Total Bayar</span>
+                        <span className="font-mono text-base font-black text-[#F26A21]">
+                            {formatRp(booking.total_amount)}
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        id="btn-simulate-success-mobile"
+                        disabled={simulating}
+                        onClick={() => handleSimulate('success')}
+                        className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-98"
+                    >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>{simulating ? 'Memproses...' : 'Simulasi Bayar Berhasil'}</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

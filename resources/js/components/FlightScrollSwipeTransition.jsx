@@ -63,10 +63,10 @@ export default function FlightScrollSwipeTransition({
     return (
         <div
             ref={containerRef}
-            className="relative w-full py-10 sm:py-14 overflow-hidden pointer-events-none select-none"
+            className="relative w-full py-12 sm:py-16 overflow-visible pointer-events-none select-none"
         >
             {/* Background Subtle Gradient & Radar Grid */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#CFE5F5]/25 to-transparent flex items-center justify-center">
+            <div className="absolute inset-0 overflow-hidden bg-gradient-to-b from-transparent via-[#CFE5F5]/25 to-transparent flex items-center justify-center pointer-events-none">
                 {/* Horizontal Flight Waypoint Radar Line */}
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-[#0E2A47]/15 to-transparent" />
             </div>
@@ -80,10 +80,6 @@ export default function FlightScrollSwipeTransition({
                     transition={{ duration: 0.6 }}
                     className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-[#CBD5E1]/80 shadow-xs"
                 >
-                    <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F26A21] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F26A21]"></span>
-                    </span>
                     <span className="font-mono text-[11px] font-bold text-[#0E2A47] tracking-wider uppercase">
                         {flightNumber}
                     </span>
@@ -100,7 +96,7 @@ export default function FlightScrollSwipeTransition({
 
             {/* SVG Flight Trail Arc (Contrail) */}
             <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
+                className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
                 preserveAspectRatio="none"
                 viewBox="0 0 1200 160"
             >
@@ -142,7 +138,7 @@ export default function FlightScrollSwipeTransition({
 
             {/* Swooping Airplane Container */}
             <motion.div
-                className="absolute top-1/2 -translate-y-1/2 z-20 pointer-events-auto cursor-pointer"
+                className="absolute top-1/2 -translate-y-1/2 z-30 pointer-events-auto cursor-pointer"
                 style={{
                     left: planeX,
                     y: planeY,
@@ -172,9 +168,12 @@ export default function FlightScrollSwipeTransition({
                         <div className="w-8 h-1 bg-white/40 rounded-full blur-xs" />
                     </motion.div>
 
-                    {/* Flight Tooltip on Hover */}
-                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md bg-[#0E2A47] text-white text-[10px] font-mono font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md pointer-events-none">
-                        ✈ Kecepatan Jelajah 840 km/h
+                    {/* Flight Tooltip on Hover (Always upright, never clipped) */}
+                    <div className="absolute -top-11 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:-translate-y-1">
+                        <div className="px-3 py-1.5 rounded-lg bg-[#0E2A47]/95 backdrop-blur-md text-white text-[11px] font-mono font-bold whitespace-nowrap shadow-xl border border-white/20 flex items-center gap-1.5">
+                            <span className="text-[#F26A21]">✈</span>
+                            <span>Kecepatan Jelajah 840 km/h</span>
+                        </div>
                     </div>
                 </div>
             </motion.div>

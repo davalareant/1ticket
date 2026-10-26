@@ -27,7 +27,7 @@ export default function Stepper({ currentStep = 1 }) {
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 />
 
-                {/* Flying Plane Indicator (N10) */}
+                {/* Flying Plane Indicator */}
                 <motion.div
                     className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 pointer-events-none"
                     initial={false}

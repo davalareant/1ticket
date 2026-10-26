@@ -1,132 +1,155 @@
-# ✈️ 1Tiket — Pemesanan Tiket Pesawat Domestik
+# 1Tiket
 
-> **"Boarding pass di bawah langit."**  
-> Platform pemesanan tiket pesawat satu arah di Indonesia yang mengutamakan kualitas UI, tipografi berkarakter, dan animasi bertema penerbangan.
-
----
-
-## 📋 Ringkasan Proyek
-- **Nama Produk:** 1Tiket ("Satu Tiket")
-- **Jenis Proyek:** Tugas / Pembelajaran Pemrograman Web
-- **Fokus Utama:** Alur end-to-end pemesanan tiket pesawat satu arah dengan animasi bertema penerbangan (N1–N17) dan pembayaran dummy interaktif (QRIS, E-Wallet, Virtual Account).
+Platform pemesanan tiket pesawat domestik berbasis web dengan alur pemesanan *end-to-end*, mulai dari pencarian penerbangan, pemilihan kursi interaktif, simulasi pembayaran multi-metode, hingga penerbitan tiket dan boarding pass digital.
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur
-- **Backend:** Laravel 12 (REST API) + Laravel Sanctum untuk autentikasi token
-- **Database:** MySQL 8 (9 tabel terelasi penuh: `users`, `airports`, `airlines`, `flights`, `flight_fares`, `bookings`, `booking_passengers`, `payment_methods`, `payments`)
-- **Frontend:** React 19 + Vite + Tailwind CSS + React Router
-- **Animasi:** Framer Motion + SVG dinamis + Tailwind Keyframes
-- **Testing:** Playwright E2E testing
+## Fitur Utama
+
+- **Pencarian Penerbangan**:
+  - Dukungan penerbangan satu arah (*one-way*) dan pulang-pergi (*round-trip*).
+  - Autocomplete bandara asal dan tujuan dengan kode IATA.
+  - Kalender tarif termurah (rentang tanggal ±3 hari).
+  - Filter interaktif berdasarkan maskapai, rentang harga, dan jadwal keberangkatan.
+  - Peta rute penerbangan interaktif berbasis koordinat bandara.
+
+- **Pemilihan Kursi Kabin**:
+  - Denah kabin interaktif untuk kelas Bisnis (2-2) dan Ekonomi (3-3).
+  - Pemilihan kursi terisolasi per penumpang dengan indikator status jelas.
+  - Opsi lewati pemilihan kursi dengan penugasan kursi otomatis.
+
+- **Layanan Tambahan & Voucher**:
+  - Penambahan bagasi ekstra (*baggage add-on*).
+  - Pilihan makanan dalam penerbangan (*in-flight meals*).
+  - Asuransi perjalanan (*Travel Shield*).
+  - Sistem kode voucher promo dengan kalkulasi potongan harga instan.
+
+- **Simulasi Pembayaran**:
+  - Penahanan kursi (*seat hold*) dengan batas waktu 15 menit.
+  - Metode pembayaran QRIS dengan tampilan kode QR interaktif.
+  - Virtual Account bank (BCA, Mandiri, BNI, BRI) dan E-Wallet (GoPay, OVO, Dana).
+  - Tombol simulasi untuk menguji skenario pembayaran berhasil maupun gagal.
+
+- **E-Ticket & Boarding Pass Digital**:
+  - Penerbitan boarding pass digital dilengkapi QR Code dan kode booking unik.
+  - Desain stub tiket dengan rincian penerbangan, nomor kursi, dan gate.
+  - Halaman **Tiket Saya** untuk memantau riwayat pesanan dan status penerbangan.
 
 ---
 
-## 🚀 Panduan Menjalankan Aplikasi
+## Tech Stack
 
-### 1. Prasyarat
-- PHP 8.2+
-- Composer 2+
-- Node.js 18+ & NPM
-- MySQL Server berjalan di `127.0.0.1:3306`
+### Backend
+- **Framework**: Laravel 12
+- **Bahasa**: PHP 8.2+
+- **Autentikasi**: Laravel Sanctum
+- **Database**: MySQL 8
 
-### 2. Setup Lingkungan
-1. Salin berkas lingkungan jika belum ada:
-   ```bash
-   cp .env.example .env
-   ```
-2. Pastikan konfigurasi database di `.env`:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=satu_tiket
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
+### Frontend
+- **Library UI**: React 19
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS v4
+- **Routing**: React Router 7
+- **Animasi & Peta**: Framer Motion, Leaflet, Lucide React
 
-### 3. Instalasi Dependensi & Migrasi Seeder
+---
+
+## Panduan Instalasi
+
+### 1. Prasyarat Sistem
+Pastikan perangkat Anda telah terpasang:
+- PHP >= 8.2
+- Composer >= 2.0
+- Node.js >= 18.0 & NPM
+- MySQL Server
+
+### 2. Kloning & Konfigurasi Lingkungan
+Salin berkas konfigurasi lingkungan:
 ```bash
-# 1. Install dependensi PHP
+cp .env.example .env
+```
+
+Sesuaikan konfigurasi koneksi database pada berkas `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=satu_tiket
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 3. Instalasi Dependensi
+Jalankan perintah instalasi dependensi PHP dan Node.js:
+```bash
+# Instalasi pustaka backend
 composer install
 
-# 2. Migrasi dan isi data dummy (bandara, maskapai, 60 hari penerbangan, metode bayar, demo user)
-php artisan migrate --seed
+# Generate application key
+php artisan key:generate
 
-# 3. Install dependensi JavaScript
+# Instalasi dependensi frontend
 npm install
+```
 
-# 4. Build frontend untuk produksi
+### 4. Migrasi & Seeder Database
+Jalankan migrasi tabel dan pengisian data awal (bandara, maskapai, jadwal penerbangan 60 hari ke depan, metode pembayaran, dan akun demo):
+```bash
+php artisan migrate --seed
+```
+
+### 5. Kompilasi Aset Frontend
+Untuk mode produksi:
+```bash
 npm run build
 ```
 
-### 4. Menjalankan Server
+Atau untuk mode pengembangan (*Hot Module Replacement*):
 ```bash
-# Jalankan web server Laravel
+npm run dev
+```
+
+### 6. Menjalankan Server
+Jalankan server aplikasi Laravel:
+```bash
 php artisan serve
 ```
-Buka browser pada: **`http://127.0.0.1:8000`**
 
-*(Opsional untuk mode pengembangan dengan HMR: jalankan `npm run dev` pada terminal terpisah)*
-
----
-
-## 👤 Akun Demo Penguji
-Untuk memudahkan penguji/dosen mencoba alur tanpa registrasi manual:
-- **Email:** `demo@1tiket.test`
-- **Password:** `password`
-- *(Tersedia tombol satu-klik **"Akun Demo"** di navbar dan halaman login)*
+Akses aplikasi melalui peramban web di: **`http://127.0.0.1:8000`**
 
 ---
 
-## 🧭 Alur Pemesanan (End-to-End)
-```mermaid
-flowchart LR
-    A[Beranda / Form Pencarian] --> B[Hasil Pencarian]
-    B --> C[Data Penumpang]
-    C --> D[Pilih Kursi Kabin]
-    D --> E[Ringkasan Pesanan]
-    E --> F[Pembayaran Dummy]
-    F -->|Simulasi Berhasil| G[E-Ticket Boarding Pass]
-    F -->|Simulasi Gagal / Ganti Metode| F
-    G --> H[Tiket Saya]
+## Akun Demo
+
+Untuk memudahkan pengujian alur pemesanan tanpa perlu mendaftar manual:
+
+- **Email**: `demo@1tiket.test`
+- **Password**: `password`
+
+*(Tersedia juga pintasan satu-klik **"Akun Demo"** pada navigasi dan halaman login)*
+
+---
+
+## Struktur Direktori Utama
+
+```text
+├── app/
+│   ├── Http/Controllers/Api/   # API Controller (Flights, Bookings, Payments, dll.)
+│   └── Models/                 # Eloquent Models & Relasi Database
+├── database/
+│   ├── migrations/             # Skema migrasi database
+│   └── seeders/                # Data seeder penerbangan, maskapai, dan bandara
+├── resources/
+│   ├── css/                    # Desain token & gaya Tailwind
+│   ├── js/
+│   │   ├── api/                # Klien HTTP Axios / Fetch wrapper
+│   │   ├── components/         # Komponen reusable (Navbar, FlightCard, SeatMap, dll.)
+│   │   ├── context/            # Context state (Auth, Booking)
+│   │   └── pages/              # Halaman aplikasi (Home, Search, Passenger, Seat, dll.)
+│   └── views/
+│       └── app.blade.php       # Layout utama SPA
+├── routes/
+│   ├── api.php                 # Rute REST API
+│   └── web.php                 # Rute fallback SPA
+└── vite.config.js              # Konfigurasi build Vite & Tailwind
 ```
-
-1. **Pencarian Tiket (`/`):** Form autocomplete asal & tujuan, swap beranimasi, tanggal berangkat, penumpang (1–5), kelas kabin, dan peta rute mini interaktif Nusantara.
-2. **Hasil Pencarian (`/cari`):** Strip tanggal ±3 hari dengan tarif termurah, filter waktu keberangkatan, pengurutan, penanda sisa kursi sedikit.
-3. **Data Penumpang (`/pesan/penumpang`):** Wajib login (tersedia autofill dari profil pemesan) dan pengisian identitas penumpang per kursi.
-4. **Denah Kabin (`/pesan/kursi`):** Denah interaktif (Bisnis 2-2, Ekonomi 3-3) dengan animasi pop kursi dan opsi lewati pemilihan kursi otomatis.
-5. **Ringkasan (`/pesan/ringkasan`):** Rincian biaya transparan (biaya layanan Rp 5.000). Saat diproses, kursi ditahan selama 15 menit.
-6. **Pembayaran Dummy (`/bayar/:kode`):** Timer cincin hitung mundur 15 menit, opsi QRIS dengan laser scan beam, Bank VA, E-Wallet, serta tombol simulasi bayar berhasil / gagal.
-7. **E-Ticket Boarding Pass (`/tiket/:kode`):** Animasi boarding pass keluar dari celah printer, stub tiket dengan efek robekan interaktif, dan QR code tiket.
-8. **Tiket Saya (`/tiket-saya`):** Tab riwayat pesanan (Menunggu Bayar, Terbayar, Kedaluwarsa, Dibatalkan).
-
----
-
-## 🎨 Spesifikasi Animasi Penerbangan (N1–N17)
-- **N1 Hero lepas landas:** Pesawat SVG melengkung dari landasan menuju langit kanan atas dengan jejak putus-putus.
-- **N2 Awan di hero:** Lapisan awan bergeser pelan memberikan kedalaman visual.
-- **N4 Peta rute mini:** Titik berdenyut di koordinat bandara asal & tujuan di peta Indonesia dengan busur penerbangan aktif.
-- **N5 Tukar asal ↔ tujuan:** Ikon berputar 180° saat tombol tukar diklik.
-- **N6 Loading hasil:** Pesawat meluncur di garis horizontal sebagai pengganti spinner biasa.
-- **N7 Kartu penerbangan masuk:** Animasi kartu bertingkat (stagger) saat hasil pencarian dimuat.
-- **N8 Garis durasi kartu:** Pesawat mini di garis durasi bergeser maju saat kartu di-hover.
-- **N9 Denah kabin:** Kursi muncul dari depan ke belakang, kursi dipilih membesar (pop) dengan warna oranye.
-- **N10 Stepper pemesanan:** Pesawat kecil meluncur antar langkah pemesanan.
-- **N12 Hitung mundur bayar:** Cincin progres melingkar menyusut dan berubah warna menjadi merah saat waktu kritis (< 2 menit).
-- **N13 Pindai QRIS:** Garis laser scan beam bergerak naik-turun di atas QR Code.
-- **N14 Bayar berhasil:** Centang animasi dan pesawat lepas landas dari tengah layar menuju e-ticket.
-- **N15 E-ticket keluar:** Boarding pass keluar secara bertahap dari celah printer dengan QR Code yang menyala.
-- **N16 Stub tiket:** Stub tiket di sisi kanan memiliki efek robekan yang bergeser saat disentuh/hover.
-- **N17 Mikro-interaksi:** Efek kompresi tombol 2% saat ditekan dan fokus field yang halus.
-
----
-
-## 🧪 Pengujian Alur Playwright
-Alur end-to-end telah diuji secara otomatis dan visual menggunakan Playwright MCP:
-1. Navigasi Beranda → Form Pencarian CGK ✈ DPS
-2. Pemilihan Tiket Penerbangan (Bayu Wings)
-3. Autentikasi Pengguna Demo (`demo@1tiket.test`)
-4. Pengisian Data Penumpang & Pemilihan Kursi Kabin (`7F`)
-5. Penerbitan Kode Booking & Penahanan Kursi 15 Menit di MySQL
-6. Simulasi Pembayaran QRIS Berhasil
-7. Penerbitan Boarding Pass & Validasi di Halaman Tiket Saya

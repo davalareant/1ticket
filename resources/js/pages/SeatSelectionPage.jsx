@@ -289,6 +289,30 @@ export default function SeatSelectionPage() {
                     </div>
                 )}
             </div>
+
+            {/* Mobile Sticky Bottom Action Bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#CBD5E1] p-3.5 sm:p-4 shadow-2xl flex items-center justify-between">
+                <button
+                    type="button"
+                    onClick={handleSkip}
+                    className="px-3 py-2 text-xs font-bold text-[#5B6B7B] hover:text-[#0E2A47] cursor-pointer"
+                >
+                    Lewati (Otomatis)
+                </button>
+                <button
+                    type="button"
+                    id="btn-next-to-summary-mobile"
+                    onClick={handleContinue}
+                    className="py-2.5 sm:py-3 px-5 sm:px-6 bg-[#F26A21] hover:bg-[#d95814] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer active:scale-98"
+                >
+                    <span>
+                        {isRoundTrip && activeLeg === 'outbound'
+                            ? 'Lanjut ke Kursi Pulang'
+                            : 'Lanjut ke Ringkasan'}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                </button>
+            </div>
         </div>
     );
 }

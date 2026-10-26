@@ -31,11 +31,6 @@ class AirlineSeeder extends Seeder
                 'name' => 'Batik Air',
                 'brand_color' => '#880E4F',
             ],
-            5 => [
-                'code' => 'IU',
-                'name' => 'Super Air Jet',
-                'brand_color' => '#C59B27',
-            ],
             6 => [
                 'code' => 'IP',
                 'name' => 'Pelita Air',
@@ -63,13 +58,15 @@ class AirlineSeeder extends Seeder
             );
         }
 
+        // Pastikan Super Air Jet terhapus jika sebelumnya pernah di-seed
+        DB::table('airlines')->where('code', 'IU')->orWhere('name', 'Super Air Jet')->delete();
+
         // Update flight numbers in flights table to match the new real airline codes
         $flightPrefixes = [
             1 => 'GA',
             2 => 'QG',
             3 => 'JT',
             4 => 'ID',
-            5 => 'IU',
             6 => 'IP',
             7 => 'SJ',
             8 => 'QZ',
